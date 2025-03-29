@@ -71,16 +71,44 @@ def add_titles(
         }
         logger.info(f"Created title lookup with {len(image_id_to_title)} entries.")
 
-        # Create a mapping from instance_id to image_id
-        # *** Adjust this based on the actual structure of mapping_data if the assumption is wrong ***
-        instance_id_to_image_id: Dict[str, int] = {
-            item['instance_id']: item['image_id']
-            for item in mapping_data
-            if 'instance_id' in item and 'image_id' in item
-        }
-        logger.info(f"Created instance_id to image_id mapping with {len(instance_id_to_image_id)} entries.")
+        # Create a mapping from original_id (instance_id) to image_id using the mapping_path file
+        # Assuming mapping_data is a list of dicts like [{'image_id': 0, 'original_id': 'hex_string'}, ...]
+        instance_id_to_image_id: Dict[str, int] = {}
+        duplicates = 0
+        processed_mapping_items = 0
+        missing_keys_count = 0
+        for item in mapping_data:
+            # Use 'original_id' for instance ID and 'image_id' for image ID
+            if 'original_id' in item and 'image_id' in item:
+                processed_mapping_items += 1
+                instance_id = item['original_id'] # <-- 使用 'original_id'
+                image_id = item['image_id']
+                if instance_id in instance_id_to_image_id:
+                    # Log if an original_id appears multiple times
+                    # logger.warning(f"Duplicate original_id '{instance_id}' found in mapping file. Keeping first encountered image_id ({instance_id_to_image_id[instance_id]}).")
+                    duplicates += 1
+                else:
+                    try:
+                        instance_id_to_image_id[instance_id] = int(image_id)
+                    except (ValueError, TypeError):
+                         logger.warning(f"Could not convert image_id '{image_id}' to int for original_id '{instance_id}'. Skipping this mapping entry.")
+                         continue # Skip this entry if image_id is not a valid integer representation
+            else:
+                # logger.warning(f"Skipping item in mapping file due to missing 'original_id' or 'image_id': {item}")
+                missing_keys_count += 1
+
+        logger.info(f"Processed {processed_mapping_items} items from mapping file.")
+        if missing_keys_count > 0:
+            logger.warning(f"Skipped {missing_keys_count} items in mapping file due to missing 'original_id' or 'image_id'.")
+        if duplicates > 0:
+             logger.warning(f"Found {duplicates} duplicate original_ids in the mapping file.")
+        logger.info(f"Created original_id to image_id mapping with {len(instance_id_to_image_id)} unique entries.") # 日志消息更新
+        if not instance_id_to_image_id:
+             logger.warning("The original_id to image_id mapping is empty. Check the mapping file format and content.")
+
 
     except KeyError as e:
+        # Keep this generic error handling
         logger.error(f"Missing expected key '{e}' in titles or mapping data. Please check file formats.")
         return
     except Exception as e:
@@ -102,12 +130,12 @@ def add_titles(
                 logger.warning(f"No title found for image_id {image_id} (instance_id: {instance_id})")
                 missing_title_count += 1
         else:
-            logger.warning(f"No image_id mapping found for instance_id: {instance_id}")
+            logger.warning(f"No image_id mapping found for instance_id/original_id: {instance_id}") # 日志消息更新
             missing_mapping_count += 1
 
     logger.info(f"Added titles to {updated_count} annotations.")
     if missing_mapping_count > 0:
-        logger.warning(f"Could not find mapping for {missing_mapping_count} instance_ids.")
+        logger.warning(f"Could not find mapping for {missing_mapping_count} instance_ids/original_ids.") # 日志消息更新
     if missing_title_count > 0:
         logger.warning(f"Could not find titles for {missing_title_count} mapped image_ids.")
 
