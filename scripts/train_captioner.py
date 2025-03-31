@@ -12,6 +12,7 @@ import torch.optim as optim
 from tqdm import tqdm
 from transformers import get_linear_schedule_with_warmup, BlipProcessor
 from torch.cuda.amp import autocast, GradScaler  # 导入 AMP 相关组件
+from huggingface_hub import snapshot_download
 
 # 添加项目根目录到Python路径
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
@@ -125,6 +126,23 @@ def train(args):
         freeze_blip=args.freeze_blip,
         proxy=args.proxy
     )
+    
+    if not os.path.exists("../snapshots/model_state_dict.pth"):
+        snapshot_download(
+            repo_id="Opps/blip_base_newyorker",
+            local_dir="../snapshots",
+            local_dir_use_symlinks=False,
+            allow_patterns="model_state_dict.pth"
+        )
+    
+    full_state_dict = torch.load("../snapshots/model_state_dict.pth")
+    state_dict = {}
+    for key, value in full_state_dict.items():
+        if key.startswith("model."):
+            new_key = "blip_model."+key[len("model."):]
+            state_dict[new_key] = value
+    
+    model.load_state_dict(state_dict, strict=False)
     model.to(device)
     
     # 计算可训练参数
@@ -245,6 +263,7 @@ def train(args):
                     attention_mask=attention_mask,  # 传入注意力掩码
                     input_ids=labels,
                     labels=labels
+                    #注意transformers库会自动处理labels和input_ids的偏移问题 无需手动处理 直接将input_ids设置为labels即可
                 )
                 
                 loss = outputs["loss"]
@@ -359,7 +378,7 @@ def main():
     parser = argparse.ArgumentParser(description="训练情感增强的BLIP描述生成模型")
     
     # 数据参数
-    parser.add_argument("--annotations_path", type=str, default=r"../annotations/preprocessed_annotations.json", help="情感标注文件路径")
+    parser.add_argument("--annotations_path", type=str, default=r"../annotations/preprocessed_annotations_with_titles.json", help="包含标题的情感标注文件路径")
     parser.add_argument("--cache_dir", type=str, default=None, help="数据集缓存目录")
     parser.add_argument("--output_dir", type=str, default="output/caption_model", help="模型输出目录")
     parser.add_argument("--num_samples", type=int, default=None, help="用于调试的最大样本数")

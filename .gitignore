@@ -1,0 +1,5 @@
+.aider*
+.snapshots/
+.history/
+__pycache__/
+.scripts/output/

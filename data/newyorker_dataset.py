@@ -30,7 +30,7 @@ class NewYorkerCaptionDataset(Dataset):
     def __init__(
         self,
         split: str = "train",
-        preprocessed_annotations_path: Optional[str] = "../annotations/preprocessed_annotations.json",
+        preprocessed_annotations_path: Optional[str] = "../annotations/preprocessed_annotations_with_titles.json",
         processor: Optional[BlipProcessor] = None,
         blip_model_name: str = "Salesforce/blip-image-captioning-large",
         max_target_length: int = 128,
@@ -255,18 +255,18 @@ class NewYorkerCaptionDataset(Dataset):
             emotion_indices, confidence_values = self.get_emotions(instance_id)
             
             # 获取参考描述（来自数据集的标签或解释）
-            reference_captions = []
-            if "label" in sample and sample["label"]:
-                reference_captions.append(sample["label"])
+            reference_titles = []
+            if "title" in sample and sample["title"]:
+                reference_titles.append(sample["title"])
             if "explanation" in sample and sample["explanation"]:
-                reference_captions.append(sample["explanation"])
+                reference_titles.append(sample["explanation"])
             
             # 如果预处理标注中有说明，优先使用
             if instance_id in self.annotations:
                 annotation = self.annotations[instance_id]
                 if "explanation" in annotation and annotation["explanation"]:
-                    if not reference_captions:  # 只在没有找到参考描述时使用
-                        reference_captions.append(annotation["explanation"])
+                    if not reference_titles:  # 只在没有找到参考描述时使用
+                        reference_titles.append(annotation["explanation"])
             
             # 处理图像为模型输入
             try:
@@ -284,13 +284,13 @@ class NewYorkerCaptionDataset(Dataset):
                 "pixel_values": pixel_values,
                 "emotion_indices": emotion_indices,
                 "confidence_values": confidence_values,
-                "reference_captions": reference_captions,
+                "reference_captions": reference_titles,
             }
             
             # 如果有参考描述，处理为文本输入
-            if reference_captions:
+            if reference_titles:
                 # 使用第一个参考描述作为目标文本
-                target_text = reference_captions[0]
+                target_text = reference_titles[0]
                 
                 # 处理文本为模型输入
                 try:

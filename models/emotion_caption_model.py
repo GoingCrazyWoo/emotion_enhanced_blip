@@ -6,7 +6,10 @@ from typing import Dict, List, Optional, Tuple, Any, Union
 from transformers import BlipProcessor, BlipForConditionalGeneration
 from torchvision import transforms
 
-from src.utils.emotion_utils import EMOTION_CATEGORIES
+# 导入 MultiheadDiffAttn 和 RotaryEmbedding
+from .multihead_diffattn import MultiheadDiffAttn
+from .rotary import RotaryEmbedding
+from ..utils.emotion_utils import EMOTION_CATEGORIES
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +25,9 @@ class EmotionEncoder(nn.Module):
         num_emotions: int = len(EMOTION_CATEGORIES),
         emotion_dim: int = 32,
         max_emotions: int = 3,
-        hidden_dim: int = 256,
+        hidden_dim: int = 768, # 假设 BLIP base 的 hidden_dim 为 768
+        num_heads: int = 8,    # 假设基线 Transformer 有 16 个头
+        depth: int = 0,        # 层索引
         dropout: float = 0.1
     ):
         """
@@ -32,13 +37,19 @@ class EmotionEncoder(nn.Module):
             num_emotions: 情感类别数量
             emotion_dim: 情感嵌入维度
             max_emotions: 最大情感数量
-            hidden_dim: 隐藏层维度
+            hidden_dim: 隐藏层维度 (应与 BLIP 文本编码器匹配)
+            num_heads: MultiheadDiffAttn 的头数
+            depth: MultiheadDiffAttn 的层索引
             dropout: Dropout率
         """
         super().__init__()
         self.num_emotions = num_emotions
         self.emotion_dim = emotion_dim
         self.max_emotions = max_emotions
+        
+        # 检查 hidden_dim 是否能被 2 * num_heads 整除
+        assert hidden_dim % (2 * num_heads) == 0, "hidden_dim must be divisible by 2 * num_heads"
+        self.head_dim = hidden_dim // num_heads // 2
         
         # 情感嵌入层
         self.emotion_embeddings = nn.Embedding(
@@ -52,19 +63,18 @@ class EmotionEncoder(nn.Module):
             nn.Linear(emotion_dim, hidden_dim),
             nn.LayerNorm(hidden_dim),
             nn.GELU(),
-            nn.Dropout(dropout),
-            nn.Linear(hidden_dim, hidden_dim),
-            nn.LayerNorm(hidden_dim),
-            nn.GELU(),
             nn.Dropout(dropout)
         )
+
+        # 旋转位置编码
+        self.rotary_emb = RotaryEmbedding(dim=self.head_dim, seq_len=max_emotions)
         
-        # 情感池化层
-        self.emotion_pooler = nn.Sequential(
-            nn.Linear(hidden_dim * max_emotions, hidden_dim),
-            nn.LayerNorm(hidden_dim),
-            nn.GELU(),
-            nn.Dropout(dropout)
+        # Multihead Differential Attention 层
+        self.diff_attn = MultiheadDiffAttn(
+            embed_dim=hidden_dim,
+            depth=depth,
+            num_heads=num_heads,
+            num_kv_heads=None # 使用 MHA
         )
         
     def forward(
@@ -84,6 +94,7 @@ class EmotionEncoder(nn.Module):
         """
         batch_size = emotion_indices.size(0)
         
+        # --- 1. 处理输入索引和置信度 ---
         # 将-1替换为padding_idx(num_emotions)
         emotion_indices = torch.where(emotion_indices < 0, torch.tensor(self.num_emotions, device=emotion_indices.device), emotion_indices)
         
@@ -108,6 +119,7 @@ class EmotionEncoder(nn.Module):
                 confidence_values = confidence_values[:, :self.max_emotions]
         
         # 情感嵌入 [batch_size, max_emotions, emotion_dim]
+        # --- 2. 获取加权情感嵌入 ---
         emotion_embeds = self.emotion_embeddings(emotion_indices)
         
         # 应用置信度权重 [batch_size, max_emotions, emotion_dim]
@@ -115,13 +127,49 @@ class EmotionEncoder(nn.Module):
         weighted_embeds = emotion_embeds * confidence_values
         
         # 转换每个情感嵌入 [batch_size, max_emotions, hidden_dim]
+        # --- 3. 初始特征转换 ---
         transformed_embeds = self.emotion_transform(weighted_embeds)
         
-        # 平铺情感特征，确保维度正确 [batch_size, max_emotions * hidden_dim]
-        flattened = transformed_embeds.reshape(batch_size, self.max_emotions * transformed_embeds.size(-1))
+        # --- 4. 应用 Multihead Differential Attention ---
+        # 计算旋转位置编码
+        freqs_cos, freqs_sin = self.rotary_emb(transformed_embeds)
+        rel_pos = (freqs_cos, freqs_sin)
         
-        # 池化情感特征 [batch_size, hidden_dim]
-        emotion_features = self.emotion_pooler(flattened)
+        # 创建注意力掩码 (忽略 padding token)
+        # padding_idx 是 self.num_emotions
+        # attention_mask 的形状应为 [batch_size, 1, tgt_len, src_len] 或 [tgt_len, src_len]
+        # 这里我们希望非 padding 的 token 互相可见
+        attn_mask = (emotion_indices == self.num_emotions).unsqueeze(1).unsqueeze(2) # [bs, 1, 1, max_emotions]
+        attn_mask = attn_mask.expand(-1, -1, self.max_emotions, -1) # [bs, 1, max_emotions, max_emotions]
+        # 在 MultiheadDiffAttn 内部会处理 causal mask，这里我们只需要处理 padding
+        # MultiheadDiffAttn 期望的 mask 是 True 代表 mask 掉，所以需要反转
+        # 但是 MultiheadDiffAttn 内部实现似乎是加性掩码，0 代表可见，-inf 代表 mask
+        # 我们需要创建一个 mask，其中 padding 位置为 -inf，其他位置为 0
+        additive_attn_mask = torch.zeros(batch_size, 1, self.max_emotions, self.max_emotions, device=transformed_embeds.device)
+        additive_attn_mask.masked_fill_(attn_mask, float("-inf"))
+        # MultiheadDiffAttn 内部会处理 causal mask，我们不需要在这里添加
+        # 因此，我们只传递 padding mask
+        
+        # 应用 MultiheadDiffAttn
+        attn_output = self.diff_attn(
+            x=transformed_embeds,
+            rel_pos=rel_pos,
+            attn_mask=additive_attn_mask # 传递 padding mask
+        ) # [batch_size, max_emotions, hidden_dim]
+        
+        # --- 5. 池化特征 ---
+        # 使用平均池化聚合特征，忽略 padding token 的影响
+        # 创建一个掩码，非 padding 位置为 1，padding 位置为 0
+        non_padding_mask = (emotion_indices != self.num_emotions).float().unsqueeze(-1) # [bs, max_emotions, 1]
+        # 计算加权和
+        masked_attn_output = attn_output * non_padding_mask
+        summed_features = masked_attn_output.sum(dim=1) # [bs, hidden_dim]
+        # 计算非 padding token 的数量
+        num_non_padding = non_padding_mask.sum(dim=1) # [bs, 1]
+        # 避免除以零
+        num_non_padding = torch.clamp(num_non_padding, min=1.0)
+        # 计算平均值
+        emotion_features = summed_features / num_non_padding # [bs, hidden_dim]
         
         return emotion_features
 
@@ -130,7 +178,7 @@ class EmotionEnhancedBlipForCaption(nn.Module):
     
     def __init__(
         self,
-        blip_model_name: str = "Salesforce/blip-image-captioning-large",
+        blip_model_name: str = "Salesforce/blip-image-captioning-base",
         dropout: float = 0.1,
         max_emotions: int = 3,
         emotion_dim: int = 32,
