@@ -1,5 +1,6 @@
 .aider*
-.snapshots/
+snapshots/
 .history/
 __pycache__/
-.scripts/output/
+scripts/output/
+annotations_copy/
