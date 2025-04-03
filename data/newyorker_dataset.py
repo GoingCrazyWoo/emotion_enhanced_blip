@@ -96,7 +96,7 @@ class NewYorkerCaptionDataset(Dataset):
                 logger.info(f"从本地路径加载New Yorker数据集: {local_dataset_path}")
                 try:
                     # 尝试从本地加载数据集
-                    from datasets import load_dataset
+                    # from datasets import load_dataset # 删除此处的局部导入，因为它导致 UnboundLocalError，应使用文件顶部的全局导入
                     
                     # 尝试作为HuggingFace datasets格式加载
                     try:
