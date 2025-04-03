@@ -322,3 +322,89 @@ def apply_rotary_emb(
     return ApplyRotaryEmb.apply(
         x, cos, sin, interleaved, inplace, seqlen_offsets, cu_seqlens, max_seqlen
     )
+
+
+# 添加一个RotaryEmbedding类，作为模块使用，用于计算和应用旋转嵌入
+class RotaryEmbedding(torch.nn.Module):
+    """
+    旋转位置编码模块，基于RoPE (Rotary Position Embedding)
+    
+    该类适配torch.autograd.Function为标准的nn.Module，便于在模型中使用
+    """
+    
+    def __init__(self, dim: int, seq_len: int, base: int = 10000):
+        """
+        初始化旋转位置编码模块
+        
+        参数:
+            dim: 隐藏维度，必须是偶数
+            seq_len: 序列长度
+            base: 位置编码的基数，默认为10000
+        """
+        super().__init__()
+        
+        # 确保dim是偶数
+        assert dim % 2 == 0, f"维度 {dim} 必须是偶数"
+        
+        # 旋转位置编码需要的cos和sin表
+        # cos_cached和sin_cached形状: [seq_len, dim/2]
+        theta = 1.0 / (base ** (torch.arange(0, dim, 2).float() / dim))
+        seq_idx = torch.arange(seq_len).float()
+        # 计算旋转角度
+        idx_theta = torch.einsum('i,j->ij', seq_idx, theta)
+        
+        # 缓存cos和sin值，便于重复使用
+        self.cos_cached = torch.cos(idx_theta)
+        self.sin_cached = torch.sin(idx_theta)
+        
+        # 配置选项
+        self.dim = dim
+        self.seq_len = seq_len
+        self.interleaved = True  # 使用GPT-J风格的交错旋转
+        
+    def forward(self, x: torch.Tensor):
+        """
+        前向传播，计算并返回旋转位置编码
+        
+        参数:
+            x: 输入张量，通常形状为 [batch_size, seq_len, hidden_dim]
+        
+        返回:
+            cos: 余弦值张量，形状为 [seq_len, dim/2]
+            sin: 正弦值张量，形状为 [seq_len, dim/2]
+        """
+        # 确保cos和sin在正确的设备上
+        device = x.device
+        
+        if self.cos_cached.device != device:
+            self.cos_cached = self.cos_cached.to(device)
+            self.sin_cached = self.sin_cached.to(device)
+            
+        # 返回正余弦值供注意力层使用
+        return self.cos_cached, self.sin_cached
+    
+    def apply_rotary(self, q: torch.Tensor, k: torch.Tensor):
+        """
+        应用旋转位置编码到查询和键
+        
+        参数:
+            q: 查询张量，形状为 [batch_size, seq_len, num_heads, head_dim]
+            k: 键张量，形状为 [batch_size, seq_len, num_heads, head_dim]
+        
+        返回:
+            q_rot: 应用旋转后的查询
+            k_rot: 应用旋转后的键
+        """
+        # 获取或计算cos和sin
+        cos, sin = self.forward(q)
+        
+        # 应用旋转位置编码
+        q_rot = apply_rotary_emb(
+            q, cos, sin, interleaved=self.interleaved
+        )
+        
+        k_rot = apply_rotary_emb(
+            k, cos, sin, interleaved=self.interleaved
+        )
+        
+        return q_rot, k_rot
