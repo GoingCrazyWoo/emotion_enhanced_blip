@@ -132,15 +132,10 @@ def train(args):
             repo_id="Opps/blip_base_newyorker",
             local_dir="../snapshots",
             local_dir_use_symlinks=False,
-            allow_patterns="model_state_dict.pth"
+            allow_patterns="blip_state_dict.pth"
         )
     
-    full_state_dict = torch.load("../snapshots/model_state_dict.pth")
-    state_dict = {}
-    for key, value in full_state_dict.items():
-        if key.startswith("model."):
-            new_key = "blip_model."+key[len("model."):]
-            state_dict[new_key] = value
+    state_dict = torch.load("../snapshots/blip_state_dict.pth")
     
     model.load_state_dict(state_dict, strict=False)
     model.to(device)
