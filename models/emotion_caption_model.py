@@ -8,7 +8,7 @@ from torchvision import transforms
 
 # 导入 MultiheadDiffAttn 和 RotaryEmbedding
 from .multihead_diffattn import MultiheadDiffAttn
-from .rotary import RotaryEmbedding
+from .rotary import ApplyRotaryEmb
 from ..utils.emotion_utils import EMOTION_CATEGORIES
 
 logger = logging.getLogger(__name__)
@@ -67,7 +67,7 @@ class EmotionEncoder(nn.Module):
         )
 
         # 旋转位置编码
-        self.rotary_emb = RotaryEmbedding(dim=self.head_dim, seq_len=max_emotions)
+        self.rotary_emb = ApplyRotaryEmb(dim=self.head_dim, seq_len=max_emotions)
         
         # Multihead Differential Attention 层
         self.diff_attn = MultiheadDiffAttn(
