@@ -262,39 +262,31 @@ class ApplyRotaryEmb(torch.autograd.Function):
             interleaved=interleaved,
             inplace=inplace,
         )
-        if isinstance(seqlen_offsets, int):
-            # Can't save int with save_for_backward
-            ctx.save_for_backward(cos, sin, cu_seqlens)
-            ctx.seqlen_offsets = seqlen_offsets
-        else:
-            ctx.save_for_backward(cos, sin, cu_seqlens, seqlen_offsets)
-            ctx.seqlen_offsets = None
+        ctx.save_for_backward(cos, sin)
         ctx.interleaved = interleaved
         ctx.inplace = inplace
+        ctx.seqlen_offsets = seqlen_offsets
+        ctx.cu_seqlens = cu_seqlens
         ctx.max_seqlen = max_seqlen
         return out if not inplace else x
 
     @staticmethod
-    def backward(ctx, do):
-        seqlen_offsets = ctx.seqlen_offsets
-        if seqlen_offsets is None:
-            cos, sin, cu_seqlens, seqlen_offsets = ctx.saved_tensors
-        else:
-            cos, sin, cu_seqlens = ctx.saved_tensors
-        # TD [2023-09-02]: For some reason Triton (2.0.0.post1) errors with
-        # "[CUDA]: invalid device context", and cloning makes it work. Idk why. Triton 2.1.0 works.
-        if not ctx.interleaved and not ctx.inplace:
-            do = do.clone()
+    def backward(
+        ctx,
+        dout,
+    ):
+        cos, sin = ctx.saved_tensors
+        # The apply_rotary function supports batch varlen,GRADIENT_PAD_TO_MAX but the backward pass does not.
+        # The logic is a bit involved and we don't need it for inference.
         dx = apply_rotary(
-            do,
+            dout,
             cos,
             sin,
-            seqlen_offsets=seqlen_offsets,
-            cu_seqlens=cu_seqlens,
-            max_seqlen=ctx.max_seqlen,
             interleaved=ctx.interleaved,
-            inplace=ctx.inplace,
             conjugate=True,
+            seqlen_offsets=ctx.seqlen_offsets,
+            cu_seqlens=ctx.cu_seqlens,
+            max_seqlen=ctx.max_seqlen,
         )
         return dx, None, None, None, None, None, None, None
 
