@@ -3,7 +3,7 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
-from src.models.rotary import apply_rotary_emb
+from emotion_enhanced_blip.models.rotary import apply_rotary_emb
 
 
 class RMSNorm(nn.Module):

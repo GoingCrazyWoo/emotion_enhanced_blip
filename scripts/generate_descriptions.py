@@ -17,9 +17,9 @@ from datetime import datetime
 # 添加项目根目录到Python路径
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
-from src.models.emotion_caption_model import EmotionEnhancedBlipForCaption
-from src.data.newyorker_dataset_backup import NewYorkerCaptionDataset
-from src.utils.emotion_utils import (
+from emotion_enhanced_blip.models.emotion_caption_model import EmotionEnhancedBlipForCaption
+from emotion_enhanced_blip.data.newyorker_dataset_backup import NewYorkerCaptionDataset
+from emotion_enhanced_blip.utils.emotion_utils import (
     format_emotions_for_display, 
     save_descriptions_to_json, 
     emotion_indices_to_names

@@ -4,7 +4,7 @@
 import json
 import logging
 import os
-#from src.models.emotion_caption_model import EMOTION_CATEGORIES, EMOTION_TO_INDEX, INDEX_TO_EMOTION
+#from emotion_enhanced_blip.models.emotion_caption_model import EMOTION_CATEGORIES, EMOTION_TO_INDEX, INDEX_TO_EMOTION
 import torch
 import numpy as np
 from pathlib import Path
