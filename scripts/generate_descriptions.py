@@ -18,7 +18,7 @@ from datetime import datetime
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
 from emotion_enhanced_blip.models.emotion_caption_model import EmotionEnhancedBlipForCaption
-from emotion_enhanced_blip.data.newyorker_dataset_backup import NewYorkerCaptionDataset
+from emotion_enhanced_blip.data.newyorker_dataset import NewYorkerCaptionDataset
 from emotion_enhanced_blip.utils.emotion_utils import (
     format_emotions_for_display, 
     save_descriptions_to_json, 
