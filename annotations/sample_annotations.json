@@ -1,0 +1,1 @@
+[{"id": "sample_1", "image_id": "sample_1", "emotions_with_indices": [{"emotion_index": 2, "emotion_name": "humor"}, {"emotion_index": 3, "emotion_name": "satire"}], "confidences": [0.9, 0.7]}]
