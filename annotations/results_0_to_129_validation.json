@@ -1,0 +1,4162 @@
+[
+  {
+    "emotions": [
+      "humor",
+      "surprise",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.7,
+      0.6
+    ],
+    "explanation": "The image depicts a humorous situation where hikers are oblivious to a Bigfoot behind them, creating a sense of surprise for the viewer. The original caption mentioning questioning god's existence also adds a layer of philosophical confusion.",
+    "suggested_caption": "\"I told you to bring more sunscreen!\", just before accidentally inventing a new religion.",
+    "caption_explanation": "This caption plays on the obliviousness of the hikers to the Yeti, while incorporating the original caption's philosophical element. It's humorous because it highlights an ordinary concern (sunscreen) juxtaposed with an extraordinary event (discovering Bigfoot and potentially questioning the existence of god).",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 0,
+    "contest_number": 646,
+    "original_id": "2af86807d57cf3abe5fd2403649f8424"
+  },
+  {
+    "emotions": [
+      "satire",
+      "sadness",
+      "humor"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.7
+    ],
+    "explanation": "The image depicts a funeral with people eating dinner next to the casket. This juxtaposition creates a strong sense of satire, highlighting the absurdity of life and death. The presence of a casket and a eulogy evokes sadness, while the unexpected combination with a dinner setting creates a dark humor.",
+    "suggested_caption": "Tonight's special: Chef's last supper...for everyone else.",
+    "caption_explanation": "The caption plays on the double meaning of 'last supper,' referring both to a meal and the chef's death. It encapsulates the satirical and darkly humorous tone of the image, while acknowledging the underlying sadness of the situation.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 1,
+        "emotion_name": "sadness"
+      },
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      }
+    ],
+    "image_id": 1,
+    "contest_number": 374,
+    "original_id": "b9396f1e4a1bcd7bcbdc97afb702ab9f"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.7
+    ],
+    "explanation": "The image presents a humorous scenario of a bird family keeping another bird in a cage, highlighting the absurdity and satire of human practices. The presence of the cage in a natural setting like a tree also creates a sense of confusion, as it defies the natural order.",
+    "suggested_caption": "Weird flex, but okay.",
+    "caption_explanation": "This caption is short, punchy, and captures the absurd and humorous nature of the image. It implies that the caged bird is a strange 'pet,' and the family is exhibiting it in a peculiar display of ownership, satirizing human behavior through the lens of birds.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 2,
+    "contest_number": 467,
+    "original_id": "2a76ac9707038a97ed698ef80d3cd3bd"
+  },
+  {
+    "emotions": [
+      "humor",
+      "surprise",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.7
+    ],
+    "explanation": "The scene is inherently humorous due to the absurdity of an alligator entering through a pet door. The man's expression clearly conveys surprise and a degree of confusion at this unexpected event.",
+    "suggested_caption": "\"I specifically asked for a *small* pet, Brenda!\"",
+    "caption_explanation": "The caption adds to the humor by implying a domestic argument over the size of the pet, further highlighting the absurdity of the situation and the man's exasperated surprise.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 3,
+    "contest_number": 505,
+    "original_id": "de1a968aa068657605d9f99d46544772"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "surprise"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.7
+    ],
+    "explanation": "The presence of a crash test dummy in a hospital setting, being wheeled around, is inherently humorous and absurd. The envy of the elderly gentlemen adds a layer of satire about aging and physical limitations. The unexpected juxtaposition of a crash test dummy and elderly patients in a hospital generates surprise.",
+    "suggested_caption": "羨慕的對象：就算是個假人，他也比我的膝蓋好！",
+    "caption_explanation": "The caption highlights the humor and satire by focusing on the elderly gentlemen's envy of the crash test dummy's knees, suggesting the absurdity of their situation and the general decline associated with aging. It implies that even a dummy has something they desire. The humor comes from the unexpected comparison.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      }
+    ],
+    "image_id": 4,
+    "contest_number": 110,
+    "original_id": "769e54635cd31edaaa65dc87a0ded021"
+  },
+  {
+    "emotions": [
+      "surprise",
+      "humor",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.7
+    ],
+    "explanation": "The surprise is evident in the faces of the couple entering the room and the magicians themselves. The humor stems from the unexpected nature of a magic show happening in a living room. The confusion is felt by the couple as they try to understand what they're seeing.",
+    "suggested_caption": "\"Honey, I told you we should have checked the schedule before inviting ourselves over for dinner.\"",
+    "caption_explanation": "This caption adds a humorous layer by suggesting the couple walked in on a planned magic show, further emphasizing the surprise and confusion they're experiencing, and hinting that they are unprepared for what they've walked into.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      },
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 5,
+    "contest_number": 464,
+    "original_id": "116c81da40ad6e4231a7c5b637dc5115"
+  },
+  {
+    "emotions": [
+      "humor",
+      "confusion",
+      "surprise"
+    ],
+    "confidence": [
+      0.9,
+      0.7,
+      0.6
+    ],
+    "explanation": "The image is humorous because of the absurd and incorrect use of the cone collars. There's also an element of confusion, as the dogs seem to have misunderstood their purpose. Finally, the unexpected configuration creates a sense of surprise.",
+    "suggested_caption": "\"We're one big cone-nected family!\"",
+    "caption_explanation": "The caption uses a pun to highlight the humor and the absurdity of the dogs' situation, emphasizing their unintentional 'connection' due to the combined cones. It captures the surprise element by implying a cheerful acceptance of their unusual predicament.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      }
+    ],
+    "image_id": 6,
+    "contest_number": 561,
+    "original_id": "e979b9e06b005ff22ccf88b5b68843db"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The image depicts a serious act (walking the plank) in an absurdly safe and mundane setting (a subway station). This juxtaposition creates humor. The scenario satirizes both the romanticized image of pirates and the often-unpleasant experience of public transportation. The blindfolded man likely represents a passenger who is bewildered or simply going along with the situation, hence confusion.",
+    "suggested_caption": "Missed Connections: Pirates Edition",
+    "caption_explanation": "The title alludes to the humorous disconnect between the expected pirate scenario and the reality of the subway station. 'Missed Connections' is a common section in newspapers/online forums where people try to find someone they had a brief encounter with, adding another layer of absurdity to the pirate theme.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 7,
+    "contest_number": 697,
+    "original_id": "ff66fc8a46d1fe64eb44022884eb6a7f"
+  },
+  {
+    "emotions": [
+      "humor",
+      "surprise",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.7
+    ],
+    "explanation": "The image presents a humorous juxtaposition of nature exploration and urban transportation. The unexpected presence of subway cars in the wilderness creates a sense of surprise and leads to confusion as it defies logical expectations.",
+    "suggested_caption": "\"I knew we should have taken the A train... apparently, they all lead to the same trailhead.\"",
+    "caption_explanation": "The caption plays on the common phrase 'take the A train' while highlighting the absurdity of finding subway cars in the middle of the woods. It evokes humor by suggesting a mundane explanation for the bizarre situation and hints at the confusion the hikers might be feeling.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 8,
+    "contest_number": 706,
+    "original_id": "0f4cefe21b164ad35b842dfac8b80e95"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The image is humorous due to the absurdity of having an office on the roof. It is satirical because it comments on the cutthroat nature of corporate culture and the pressure to succeed, even to the point of endangering one's life. The confusion arises from the illogical setting – why is this person's office on the roof?",
+    "suggested_caption": "\"Team Building\" took a strange turn this year.",
+    "caption_explanation": "This caption plays on the common corporate phrase 'team building' and juxtaposes it with the image's absurdity, suggesting that something went terribly wrong during a company event, resulting in the office being relocated to the roof. This reinforces the humor and satire by hinting at a dark and twisted reason for the unusual office location.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 9,
+    "contest_number": 201,
+    "original_id": "99aed359a3cd0aeb6cf24d68d4493150"
+  },
+  {
+    "emotions": [
+      "humor",
+      "surprise",
+      "warmth"
+    ],
+    "confidence": [
+      0.9,
+      0.7,
+      0.6
+    ],
+    "explanation": "The oversized umbrella is inherently humorous. The viewer is surprised by the sheer size of the umbrella relative to the couple. There's also a sense of warmth in the man's attempt to protect his companion from the rain, albeit in an exaggerated way.",
+    "suggested_caption": "When you *really* want to make sure she doesn't get wet.",
+    "caption_explanation": "The caption highlights the humorous absurdity of the situation while also suggesting a heartwarming, if slightly over-the-top, gesture of affection and protection.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      },
+      {
+        "emotion_index": 7,
+        "emotion_name": "warmth"
+      }
+    ],
+    "image_id": 10,
+    "contest_number": 521,
+    "original_id": "f9dc86aa8282fe328891f5d21ac3e8c6"
+  },
+  {
+    "emotions": [
+      "humor",
+      "confusion",
+      "surprise"
+    ],
+    "confidence": [
+      0.95,
+      0.85,
+      0.75
+    ],
+    "explanation": "The core of the image is a humorous absurdity. The unexpected sight of fish in a suitcase generates confusion and surprise, as it defies logical packing practices.",
+    "suggested_caption": "Honey, I think I packed the aquarium this time...",
+    "caption_explanation": "The caption highlights the humor and surprise by suggesting a misunderstanding and subtly alluding to the unusual contents of the suitcase in a lighthearted way.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      }
+    ],
+    "image_id": 11,
+    "contest_number": 33,
+    "original_id": "459aece95f3ecd73d6dadee0db5300c2"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The image depicts a humorous and satirical situation: a patient in a hospital bed using a beer helmet connected with IVs. This unexpected and inappropriate use of medical equipment creates humor. The woman's glare adds to the satirical aspect, highlighting the absurdity of the situation. The situation also evokes confusion regarding the patient's motives and the hospital's response.",
+    "suggested_caption": "Hospital's happy hour: IV drip or beer sip?",
+    "caption_explanation": "The caption is concise and evokes the humor of the scene by directly contrasting the intended use of IVs with the implied beer consumption. It captures the satirical juxtaposition of medical care and recreational drinking, prompting a smile and a bit of bewilderment.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 12,
+    "contest_number": 573,
+    "original_id": "4f58c55274fa02e5c409156567dd0766"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.7
+    ],
+    "explanation": "The image is humorous because it depicts an absurd scenario: a plant as the CEO. It's satirical because it subtly critiques corporate culture, suggesting that even a plant could lead a company. The employees' expressions and the overall situation generate a sense of confusion.",
+    "suggested_caption": "Growth Strategy: From Lobby to Leadership.",
+    "caption_explanation": "The caption plays on the double meaning of 'growth,' referencing both the plant and the company's strategic development. It highlights the absurdity of the situation while poking fun at corporate jargon and the idea of climbing the corporate ladder, thus capturing the humor and satire present in the image. The implied question of *how* a plant became CEO contributes to the overall sense of confusion.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 13,
+    "contest_number": 545,
+    "original_id": "7877c86f0cccb132a3935ad035ef8e21"
+  },
+  {
+    "emotions": [
+      "humor",
+      "surprise",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.7
+    ],
+    "explanation": "The image presents an absurd scenario (a giant sandwich as a subway train), which is inherently humorous. The couple's reaction suggests surprise at the unexpected sight and confusion about what they are seeing. The original prompt mentions 'a joke', therefore humor is definitely a relevant emotion.",
+    "suggested_caption": "Next stop: Lunch!",
+    "caption_explanation": "This caption is short, punchy, and highlights the humor of the situation. It plays on the idea of a subway stop while also referencing the sandwich, suggesting that it's the destination.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 14,
+    "contest_number": 609,
+    "original_id": "a1f35e032c857d6e4292935af069dfd0"
+  },
+  {
+    "emotions": [
+      "humor",
+      "surprise",
+      "confusion"
+    ],
+    "confidence": [
+      0.95,
+      0.8,
+      0.7
+    ],
+    "explanation": "The image presents a humorous situation (a turtle flying with ducks), which is also surprising and somewhat confusing given the natural limitations of turtles. The unexpectedness and absurdity contribute to the overall comedic effect.",
+    "suggested_caption": "Sky High Tortoise: When Your Dreams Take Flight (Literally!)",
+    "caption_explanation": "The title immediately highlights the humorous and surprising element of a flying turtle. The phrase \"Sky High Tortoise\" is unexpected and funny, while \"When Your Dreams Take Flight (Literally!)\" adds to the absurdity and suggests a fantastical scenario.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 15,
+    "contest_number": 341,
+    "original_id": "5a505cecdd8cabde2282b7c9d313c378"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The image presents a humorous situation with the arrival of farmers and a donkey during a profit downturn. The contrast between the modern executive and the old-fashioned farmers creates satire. The executive's expression and the overall absurdity of the situation also evoke confusion.",
+    "suggested_caption": "\"We just wanted to see where our retirement went!\" (and meet the donkey they invested in).",
+    "caption_explanation": "The caption highlights the humor and satire by imagining what the farmers might say upon confronting the executive, implying their investment has gone wrong and suggesting a literal (and absurd) connection between their money and the donkey, adding a layer of confused absurdity to the situation.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 16,
+    "contest_number": 233,
+    "original_id": "72e642f619a13896b42043d77fc73e55"
+  },
+  {
+    "emotions": [
+      "humor",
+      "surprise",
+      "confusion"
+    ],
+    "confidence": [
+      0.95,
+      0.8,
+      0.7
+    ],
+    "explanation": "The image is inherently humorous due to the absurdity of a waiter playing a tuba. The couple's reaction is likely a mix of surprise and confusion at this unconventional form of 'service'.",
+    "suggested_caption": "\"And for your listening pleasure, the Soup Du Jour!\"",
+    "caption_explanation": "The caption plays on the typical waiter's introduction of menu items, juxtaposing it with the unexpected musical performance. This highlights the humor and surprise of the situation, while also hinting at the possible annoyance of the couple being serenaded with a tuba.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 17,
+    "contest_number": 390,
+    "original_id": "cd47198cd781ed6880155300d479c0c9"
+  },
+  {
+    "emotions": [
+      "sadness",
+      "humor",
+      "satire"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.7
+    ],
+    "explanation": "The crying train clearly evokes sadness. The anthropomorphism of the train in a bar is inherently humorous, as is the idea of a train drinking away its sorrows. The situation satirizes the human tendency to cope with emotional pain through unhealthy means.",
+    "suggested_caption": "\"It's not easy being derailed from love.\"",
+    "caption_explanation": "The caption highlights the sadness of the train's situation while also playing on the train-related pun of 'derailed', adding a layer of humor to the sadness.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 1,
+        "emotion_name": "sadness"
+      },
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      }
+    ],
+    "image_id": 18,
+    "contest_number": 497,
+    "original_id": "96a7f6b4b9d3f29351c2d4b39482b6ec"
+  },
+  {
+    "emotions": [
+      "humor",
+      "surprise",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.7,
+      0.6
+    ],
+    "explanation": "The image depicts a piece of toast making a reservation, which is inherently humorous due to its absurdity. The waiter's expression conveys surprise and perhaps confusion at the unusual customer. The overall scene evokes a sense of playful absurdity.",
+    "suggested_caption": "Table for One, Well-Done?",
+    "caption_explanation": "The caption plays on the pun of 'well-done' referring to both how toast is cooked and how a restaurant service is performed. It adds to the humor by implying the waiter might actually be considering how to 'cook' the toast-customer, reinforcing the overall surreal and funny nature of the scene.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 19,
+    "contest_number": 695,
+    "original_id": "a426ee443ddfa6f9e95c51fe52ad8f86"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "surprise"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The image is humorous due to the absurd juxtaposition of a confessional booth with an MRI machine. It is satirical because it comments on the cost of healthcare and the 'forgiveness' of medical bills. The unexpected presence of a priest in the context of an MRI scan generates surprise.",
+    "suggested_caption": "Confess your sins... and your deductible.",
+    "caption_explanation": "This title uses wordplay to connect the act of confession with the financial burden of healthcare, highlighting the humorous and satirical nature of the image by linking spiritual and financial absolution.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      }
+    ],
+    "image_id": 20,
+    "contest_number": 490,
+    "original_id": "7061cfc3afb444fbbd2e74ba73cfb9eb"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The scene is inherently humorous due to the juxtaposition of the mundane (waiting for an elevator) with the absurd (the elevator being filled with fire and damned souls). The nonchalant suggestion to take the stairs adds to the satire. The woman's expression suggests a mild confusion or annoyance rather than outright terror, further enhancing the comedic effect.",
+    "suggested_caption": "\"Well, at least the wait is predictable.\"",
+    "caption_explanation": "The caption plays on the idea that even in hell, some things are constant, like the slow elevator. It captures the dark humor and satire present in the image, suggesting a resigned acceptance of even the most bizarre situations.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 21,
+    "contest_number": 709,
+    "original_id": "c191f4e3c9d9bc93dc33374a637fae0d"
+  },
+  {
+    "emotions": [
+      "humor",
+      "sadness",
+      "confusion"
+    ],
+    "confidence": [
+      0.8,
+      0.7,
+      0.6
+    ],
+    "explanation": "The scene presents a dark premise (man on a ledge) with a surreal and absurd twist (a bird offering life coaching), creating a humorous contrast. The man's potential despair and the bird's cluelessness contribute to sadness and confusion.",
+    "suggested_caption": "Bird Brainstorming: When your therapist has feathers.",
+    "caption_explanation": "This caption highlights the humor of the situation by suggesting the bird is offering advice, while alluding to the man's potential mental state and the bird's perhaps ill-informed perspective. It also hints at the sadness of the man seeking advice in such a desperate situation, contrasting with the absurdity of the avian counselor.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 1,
+        "emotion_name": "sadness"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 22,
+    "contest_number": 12,
+    "original_id": "9583b365d84157d581eaae0333f448d4"
+  },
+  {
+    "emotions": [
+      "humor",
+      "confusion",
+      "surprise"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.7
+    ],
+    "explanation": "The image depicts an absurd situation (a man encased in tree bark going to work), eliciting humor. The wife's calm demeanor juxtaposed with the husband's bizarre appearance creates confusion and surprise for the viewer.",
+    "suggested_caption": "Honey, I'm home! (And I brought the firewood.)",
+    "caption_explanation": "The caption plays on the classic 'Honey, I'm home!' greeting, but adds a humorous twist by acknowledging the man's arboreal state and hinting at a practical use, thus capturing the humor, confusion, and slight surprise of the situation.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      }
+    ],
+    "image_id": 23,
+    "contest_number": 50,
+    "original_id": "64126db637cde4a5a79188b535dbb7c9"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "surprise"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The image is humorous due to the anthropomorphic storm cloud with a menacing face juxtaposed against the relaxed picnic scene. It's satirical because it comments on human reactions to external threats (weather, life challenges), often downplaying them. There's an element of surprise because the cloud is unexpectedly personified.",
+    "suggested_caption": "Heads up, honey. Looks like someone's feeling a little...cloudy.",
+    "caption_explanation": "The caption uses a double meaning of 'cloudy' (referring to both the weather and mood) to highlight the humor in the contrast between the cheerful picnic and the angry cloud. It subtly acknowledges the surprise element of the personified cloud and adds a lighthearted tone.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      }
+    ],
+    "image_id": 24,
+    "contest_number": 757,
+    "original_id": "840dca821bb84c286126fdfd5917674a"
+  },
+  {
+    "emotions": [
+      "humor",
+      "surprise",
+      "happiness"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.7
+    ],
+    "explanation": "The image is funny because it depicts the seven dwarfs roller skating, which is an unexpected and humorous twist on the classic Snow White story. The surprise element comes from this unexpected activity. The smiles on Snow White and the dwarfs suggest happiness and enjoyment.",
+    "suggested_caption": "Snow White and the Seven Speedy Dwarfs.",
+    "caption_explanation": "This caption highlights the unexpected and funny element of the dwarfs on roller skates, suggesting a sense of fun and lightheartedness. It captures the surprise and happiness evident in the image.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      },
+      {
+        "emotion_index": 0,
+        "emotion_name": "happiness"
+      }
+    ],
+    "image_id": 25,
+    "contest_number": 661,
+    "original_id": "c2611caf32a4f8b2f9d85216b98b80be"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "surprise"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The presence of Death as a client in a courtroom setting is inherently humorous and satirical. The situation is unexpected, creating a sense of surprise.",
+    "suggested_caption": "\"Your Honor, my client pleads... not guilty. Everyone dies eventually!\"",
+    "caption_explanation": "This caption plays on the absurdity of Death being on trial, highlighting the humor and satire by having him plead not guilty to something that is his very nature. The 'Everyone dies eventually!' line adds a surprising and darkly humorous twist.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      }
+    ],
+    "image_id": 26,
+    "contest_number": 517,
+    "original_id": "48679812bb0099e2f155e48fcfd3b956"
+  },
+  {
+    "emotions": [
+      "humor",
+      "surprise",
+      "embarrassment"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The image is humorous due to the unexpected role reversal and the potential awkwardness of the situation. Surprise is present because the woman clearly didn't expect a man to emerge from the cake. The man is probably embarassed to have to be doing this.",
+    "suggested_caption": "\"Before I say 'Happy Birthday,' just a little reminder about the outstanding balance on this cake...\"",
+    "caption_explanation": "The caption plays on the humor of the situation by highlighting the anti-climactic message delivered by the man, which undercuts the usual celebratory nature of jumping out of a cake. It also hints at the embarrassment and surprise involved.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      },
+      {
+        "emotion_index": 6,
+        "emotion_name": "embarrassment"
+      }
+    ],
+    "image_id": 27,
+    "contest_number": 481,
+    "original_id": "c3ef32906c4316cf31aa0c58158ac92a"
+  },
+  {
+    "emotions": [
+      "humor",
+      "confusion",
+      "satire"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.7
+    ],
+    "explanation": "The image is humorous because it depicts an absurd situation: skiing in the desert. There's also a sense of confusion, as the characters are attempting an impossible activity. It's satirical because it mocks the idea of 'cross-country' skiing by taking it to a ridiculous extreme.",
+    "suggested_caption": "Cross-country skiing: The ultimate test of dedication (and poor judgment).",
+    "caption_explanation": "The caption highlights the humor and satire by suggesting that the skiers are either extremely dedicated or simply making a very poor decision. It emphasizes the absurdity of the situation.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      }
+    ],
+    "image_id": 28,
+    "contest_number": 362,
+    "original_id": "fdd0969ef64168013e278defb6299272"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "sadness"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The image is humorous due to the absurd situation of the bull casually conversing with swords in its back. It's satirical because it comments on the disconnect between couples, where one person's struggles are often minimized. There's an underlying layer of sadness because the bull is clearly in pain, yet the cow seems oblivious or uncaring.",
+    "suggested_caption": "\"You think *your* day was rough?\"",
+    "caption_explanation": "The caption captures the humorous juxtaposition of the bull's obviously difficult day with the implied triviality of the cow's complaints. It highlights the satirical aspect of the cartoon by showcasing the disconnect between the couple and emphasizes a sense of humor in a sad situation.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 1,
+        "emotion_name": "sadness"
+      }
+    ],
+    "image_id": 29,
+    "contest_number": 485,
+    "original_id": "58ae4b854c156392714ddce3b205fff2"
+  },
+  {
+    "emotions": [
+      "humor",
+      "surprise",
+      "satire"
+    ],
+    "confidence": [
+      0.9,
+      0.6,
+      0.5
+    ],
+    "explanation": "The image presents a humorous role reversal, with the sheepdogs seemingly overwhelmed by their job of 'counting sheep,' a task meant to induce sleep, creating a satirical take on work-related stress. The size difference between the dogs and sheep adds to the comical effect.",
+    "suggested_caption": "\"Seriously, Dave, I'm starting to think about sheep... in my sleep!\"",
+    "caption_explanation": "This caption highlights the humor by anthropomorphizing the dogs and suggesting they are experiencing work-related stress, a direct contrast to the intended calming effect of counting sheep. It implies a surprising level of anxiety in the sheepdogs, stemming from their very job.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      }
+    ],
+    "image_id": 30,
+    "contest_number": 750,
+    "original_id": "e6695a626236559785007d19322371d5"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The image is humorous due to the absurdity of the naked skydivers and the contrast between the two groups. It is satirical in its commentary on art and performance. There's also an element of confusion as the viewer tries to understand the purpose and motivation behind the naked skydivers.",
+    "suggested_caption": "Skydiving: Early Work vs. Later Masterpieces.",
+    "caption_explanation": "The caption plays on the original caption suggestion, implying the naked skydivers performing interpretative dance are the 'later masterpieces,' a satirical jab at the perceived pretentiousness of certain art forms and the evolution of an artist's work. It also adds to the humor by highlighting the absurdity of the situation.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 31,
+    "contest_number": 493,
+    "original_id": "6c59b7c8770c81e797bffd57f82e6917"
+  },
+  {
+    "emotions": [
+      "humor",
+      "confusion",
+      "satire"
+    ],
+    "confidence": [
+      0.95,
+      0.8,
+      0.7
+    ],
+    "explanation": "The image is humorous due to the absurdity of a suited man working on a laptop while parachuting. There's confusion as to why he's doing this. The image satirizes the modern work culture's obsession with productivity, even in the most inappropriate situations.",
+    "suggested_caption": "Cloud Computing: Now Taking 'Remote Work' to a Whole New Level!",
+    "caption_explanation": "This title highlights the humor and satire by playing on the term 'cloud computing' and exaggerating the concept of remote work. It implies the man is so dedicated to his job that he's working even while parachuting, creating a funny and ironic situation.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      }
+    ],
+    "image_id": 32,
+    "contest_number": 270,
+    "original_id": "e311e4712335e70b5481797c2891b1af"
+  },
+  {
+    "emotions": [
+      "humor",
+      "sadness",
+      "surprise"
+    ],
+    "confidence": [
+      0.9,
+      0.7,
+      0.6
+    ],
+    "explanation": "The scene depicts a stark situation (stranded in a desert with a skull), yet one character is bizarrely happy while staring at his watch, creating a strong sense of humor. The other character's obvious distress indicates sadness. The happy character's unusual reaction is surprising given their predicament.",
+    "suggested_caption": "Finally! It's Happy Hour, even if it's our last.",
+    "caption_explanation": "The caption plays on the humor of the situation by having the happy man focus on 'Happy Hour' despite their dire circumstances. The phrase 'even if it's our last' hints at the sadness and impending doom, and the casual tone is unexpected in this situation, creating surprise.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 1,
+        "emotion_name": "sadness"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      }
+    ],
+    "image_id": 33,
+    "contest_number": 54,
+    "original_id": "c4e0077d231de401ece98bb63f322dad"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "confusion"
+    ],
+    "confidence": [
+      0.95,
+      0.85,
+      0.7
+    ],
+    "explanation": "The cartoon is humorous due to the absurdity of a bull conducting a job interview. It's satirical because it comments on the sometimes aggressive and intimidating nature of corporate leadership. There's a level of confusion because the scene is unexpected and nonsensical.",
+    "suggested_caption": "\"So, tell me why you think you're qualified to face *my* bull... market?\"",
+    "caption_explanation": "The caption plays on the double meaning of 'bull' (the animal and the stock market term) and incorporates the bull's angry expression into a question about the bullfighter's suitability for the job. It maintains the humorous and satirical tone of the cartoon.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 34,
+    "contest_number": 430,
+    "original_id": "161f912c6cedd1d5448b5a94e8a203a3"
+  },
+  {
+    "emotions": [
+      "humor",
+      "surprise",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.7
+    ],
+    "explanation": "The humor stems from the absurd juxtaposition of surfing and the office environment. The woman's expression and the setting suggest surprise and confusion at this unexpected behavior.",
+    "suggested_caption": "\"Meeting adjourned! The waves are calling!\"",
+    "caption_explanation": "This title emphasizes the humor and the surprise of the situation by directly stating the reason for the man's actions in an unexpected and abrupt manner, mimicking the boss's whimsical decision.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 35,
+    "contest_number": 5,
+    "original_id": "740bc24799b3c8d167adb76a6e487751"
+  },
+  {
+    "emotions": [
+      "humor",
+      "surprise",
+      "satire"
+    ],
+    "confidence": [
+      0.95,
+      0.85,
+      0.7
+    ],
+    "explanation": "The image presents a humorous situation with a dog reading a book, a surprising twist on typical dog behavior. The presence of the man reading a newspaper alongside the dog satirizes human behavior and intellectual pursuits.",
+    "suggested_caption": "He says it lacks bite.",
+    "caption_explanation": "The caption 'He says it lacks bite' plays on the double meaning of 'bite,' referring both to a dog's literal bite and the metaphorical lack of substance or interest in the book, reinforcing the humor and satire of the scene.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      }
+    ],
+    "image_id": 36,
+    "contest_number": 19,
+    "original_id": "ff623359da822e0f280286e3b6b6356f"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "surprise"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The image is humorous due to the unexpected sight of angels on bicycles in heaven. It's satirical as it pokes fun at the concept of 'eternal rest' and expectations of the afterlife. The surprise element comes from the unexpected contrast between traditional heaven imagery and the mundane activity of cycling.",
+    "suggested_caption": "Eternal Rest? More Like Eternal Exercise!",
+    "caption_explanation": "The caption highlights the humorous and satirical aspects of the image by contrasting the promised 'eternal rest' with the physical exertion of cycling in the afterlife. The exclamation point adds to the surprise and comedic effect.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      }
+    ],
+    "image_id": 37,
+    "contest_number": 316,
+    "original_id": "16bffc04b837b8aaa65d099ab7b644a8"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "surprise"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The cartoon depicts a doctor examining a patient's heart on a busy street, which is absurd and humorous. It satirizes the healthcare system's inaccessibility and the lengths some might go to receive medical attention. The unexpectedness of the situation also contributes to the surprise element.",
+    "suggested_caption": "The Urgent Care Wait Times Were Just Too Long.",
+    "caption_explanation": "This caption highlights the humor by implying the doctor is taking extreme measures due to long wait times for medical care, playing on the absurdity of the situation and subtly criticizing the healthcare system.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      }
+    ],
+    "image_id": 38,
+    "contest_number": 360,
+    "original_id": "bb1bb8d53f09de38d9626b6d37457a90"
+  },
+  {
+    "emotions": [
+      "humor",
+      "confusion",
+      "surprise"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.7
+    ],
+    "explanation": "The image presents a bizarre and unexpected scenario: chefs inside a whale. This creates a sense of humor, arising from the absurdity of the situation. The chefs' expressions and the setting evoke confusion and surprise, as they are clearly not in a typical restaurant environment.",
+    "suggested_caption": "\"Well, this is certainly a *different* kind of indoor dining...\"",
+    "caption_explanation": "The caption highlights the humor by juxtaposing the familiar concept of 'indoor dining' with the outlandish reality of being inside a whale. The word 'different' is emphasized to underscore the surprise and unusual nature of their dining location. It also subtly hints at the COVID-19 context mentioned in the original description, making it relatable.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      }
+    ],
+    "image_id": 39,
+    "contest_number": 748,
+    "original_id": "f65170c5a269f77d5994828442e6036c"
+  },
+  {
+    "emotions": [
+      "humor",
+      "surprise",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.7
+    ],
+    "explanation": "The situation of giving birth to a car is inherently humorous and absurd. The woman's outstretched hands and the surrounding people's expressions suggest surprise and bewilderment. The overall scenario is also confusing due to its illogical nature.",
+    "suggested_caption": "\"It's... a minivan!\" - Delivery Room Dilemma",
+    "caption_explanation": "This caption highlights the humor and surprise elements by framing the announcement in a familiar childbirth context, but with an unexpected twist. It plays on the usual exclamation of joy or disappointment regarding the baby's gender, substituting it with the make of a car, further emphasizing the absurdity and confusion.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 40,
+    "contest_number": 361,
+    "original_id": "e4ae7ee014995e8a0ce66a75106eabc3"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "confusion"
+    ],
+    "confidence": [
+      0.95,
+      0.85,
+      0.7
+    ],
+    "explanation": "The image is inherently humorous due to the absurd situation of a man in a suit and tie giving a speech from a podium in bed. It's satirical because it pokes fun at politicians and their need to always be 'on stage,' even in their personal lives. There is also a sense of confusion or absurdity, as the woman's expression suggests she is perplexed by this situation.",
+    "suggested_caption": "Honey, I swear, I'm *this* close to winning the bedroom debate!",
+    "caption_explanation": "The caption plays on the humorous and satirical elements by portraying the man's need to be performing and 'winning' even in bed, suggesting a lack of genuine intimacy and an obsession with political performance.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 41,
+    "contest_number": 456,
+    "original_id": "7892a8ac0587b1de2489ded46d845f75"
+  },
+  {
+    "emotions": [
+      "humor",
+      "confusion",
+      "satire"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.7
+    ],
+    "explanation": "The image is inherently humorous due to the absurdity of a clown being a police officer in an interrogation. The suspect's likely confusion at this situation contributes to the overall comedic effect. The image also satirizes the often-intimidating atmosphere of police interrogations by contrasting it with the ridiculousness of a clown.",
+    "suggested_caption": "\"You can tell me, or we can get the balloons involved.\"",
+    "caption_explanation": "This caption highlights the humor by playing on the absurdity of a clown using balloon animals as a form of interrogation tactic, further amplifying the suspect's likely confusion and satirizing the traditional police interrogation methods.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      }
+    ],
+    "image_id": 42,
+    "contest_number": 613,
+    "original_id": "e628161886b4317017cf4084dc23a17d"
+  },
+  {
+    "emotions": [
+      "humor",
+      "surprise",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.7
+    ],
+    "explanation": "The image's humor stems from the absurdity of the gigantic chicken. The woman's stare suggests surprise and perhaps confusion at the chicken's unusual size.",
+    "suggested_caption": "\"I asked for a family-sized chicken, but this is ridiculous!\"",
+    "caption_explanation": "This caption captures the humor of the situation by highlighting the woman's reaction to the oversized chicken. It plays on the expectation of a 'family-sized' portion and the utter unexpectedness of the chicken's actual size, reflecting both surprise and confusion.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 43,
+    "contest_number": 405,
+    "original_id": "1d6658c4d11ed1994e46378733ab84e2"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "surprise"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The presence of an ape-like creature at a formal gathering is inherently humorous. The scenario satirizes the scientific community and social norms. The guests' reactions, or lack thereof, to the creature suggests surprise or a deliberate attempt to normalize the unusual situation.",
+    "suggested_caption": "\"And this is Bob, our post-doc. He's making incredible progress.\"",
+    "caption_explanation": "This caption utilizes humor by understating the obvious absurdity of introducing an ape as a \"post-doc\" in a professional setting. It plays on the element of surprise, suggesting that this situation is entirely normal within this particular group.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      }
+    ],
+    "image_id": 44,
+    "contest_number": 370,
+    "original_id": "1cc656613e5fdfa2ef308bd5e043c75b"
+  },
+  {
+    "emotions": [
+      "satire",
+      "sadness",
+      "surprise"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The cartoon uses satire by depicting a serious issue (potential loss of rights, implied in the original description) as a struggle against a monstrous wave. Sadness comes from the underlying threat to the people in the boat. Surprise is evoked by the unexpected appearance of the wave with a face and arms.",
+    "suggested_caption": "Sailing Against the Tide of Change.",
+    "caption_explanation": "This caption reflects the satirical representation of fighting against a powerful force of change, and the implied sadness and surprise of being caught in such a difficult situation. 'Tide of change' is a metaphor for social change that can be seen as either good or bad depending on the viewer's perspective. The double meaning is fitting for this political satire.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 1,
+        "emotion_name": "sadness"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      }
+    ],
+    "image_id": 45,
+    "contest_number": 551,
+    "original_id": "3da979789b9e56f24fc0071a48e3debf"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "confusion"
+    ],
+    "confidence": [
+      0.95,
+      0.85,
+      0.7
+    ],
+    "explanation": "The juxtaposition of a caveman with a stone wheel being given a speeding ticket by a modern police officer is inherently humorous. The scene satirizes the absurdity of modern law enforcement encountering prehistoric technology. The caveman's likely confusion and outrage at being ticketed for something he 'invented' adds to the comedic effect.",
+    "suggested_caption": "Evolution's Speed Bump: Caveman Gets a Ticket.",
+    "caption_explanation": "The title highlights the comedic contrast between the caveman's primitive technology and the modern police officer's enforcement of traffic laws, implying the caveman's vehicle (the stone wheel) is a 'speed bump' in evolution and therefore inherently slow. This captures the humor and satire present in the image.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 46,
+    "contest_number": 91,
+    "original_id": "21ccc6ef3fb86293f127c6c305f042ab"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The image is humorous due to the absurd situation of a car being in therapy. It's satirical because it pokes fun at self-driving car technology and the idea of AI needing therapy. There's also a sense of confusion, as it's unexpected to see a car as a patient.",
+    "suggested_caption": "\"It's just... so many voices telling me where to go!\"",
+    "caption_explanation": "The caption captures the humor of the situation by giving the car a relatable therapy problem: being overwhelmed by external commands, referencing the self-driving aspect. It highlights the satirical element by personifying the car and exaggerating the voice control aspect.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 47,
+    "contest_number": 536,
+    "original_id": "2d534d248e1770eaa7bc010534e2728b"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "surprise"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The scene of monsters casually eating a city is inherently humorous, especially given their facial expressions. The situation is also satirical, commenting on the absurdity of monster movies and potentially human destruction. The scale and nonchalant nature of the monsters create an element of surprise.",
+    "suggested_caption": "Just a casual lunch break... with a side of metropolis.",
+    "caption_explanation": "This caption emphasizes the humor by contrasting the monstrous act with a mundane phrase like 'lunch break' and 'side'. The inclusion of 'metropolis' satirically underscores the enormity of the meal. The surprise element comes from the implication that city-eating is a normal occurrence for these creatures.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      }
+    ],
+    "image_id": 48,
+    "contest_number": 4,
+    "original_id": "4db03841aebce2633b4c53327584d78c"
+  },
+  {
+    "emotions": [
+      "humor",
+      "surprise",
+      "confusion"
+    ],
+    "confidence": [
+      0.95,
+      0.8,
+      0.6
+    ],
+    "explanation": "The cartoon is clearly intended to be humorous, driven by the unexpected sight of a naked man climbing through the window. The woman reading is oblivious, leading to an element of surprise for the viewer and confusion about the man's motives.",
+    "suggested_caption": "\"Honey, I'm home!\" ...But maybe not through the front door?",
+    "caption_explanation": "The caption plays on the classic trope of someone announcing their arrival, but adds a humorous twist by highlighting the unconventional entry point and the absurdity of the situation. It evokes surprise and hints at the underlying confusion.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 49,
+    "contest_number": 391,
+    "original_id": "72a49b84a7f53caf5ec072c0d7979cdc"
+  },
+  {
+    "emotions": [
+      "humor",
+      "surprise",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The image is inherently humorous due to the absurdity of a bull jumping into a swimming pool. The surprise element comes from the unexpectedness of seeing a bull in such a setting. There's also a hint of confusion as viewers might wonder how the other people react to this strange visitor.",
+    "suggested_caption": "He's not *just* bullshitting around.",
+    "caption_explanation": "The caption plays on the double meaning of 'bullshitting,' implying that the bull's presence is both nonsensical and unexpectedly real. This reflects the humor and surprise in the image.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 50,
+    "contest_number": 491,
+    "original_id": "293e303bb1f8a63b6fb84ee11c89a752"
+  },
+  {
+    "emotions": [
+      "humor",
+      "confusion",
+      "surprise"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The scene of an adult man in a playpen, wearing pajamas and holding a baby monitor, is inherently humorous due to the role reversal and unexpectedness. His expression suggests confusion as to how he ended up in this situation, and the situation itself is surprising.",
+    "suggested_caption": "\"Honey, I think the baby's outsmarted me again!\"",
+    "caption_explanation": "This caption captures the humor by highlighting the absurdity of the situation and the ongoing nature of the apparent 'battle' between the parent and the baby. It also implies the surprise and confusion the parent is feeling.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      }
+    ],
+    "image_id": 51,
+    "contest_number": 558,
+    "original_id": "d295bc81de330c199393377b974f8ade"
+  },
+  {
+    "emotions": [
+      "humor",
+      "surprise",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The image depicts an absurd situation with a tsunami wave in a pool, clearly intended for humor. The couple's relaxed posture juxtaposed against the gigantic wave creates a sense of surprise and slight confusion as to how this could possibly be happening.",
+    "suggested_caption": "Honey, I think the kids just made a splash.",
+    "caption_explanation": "The caption uses understatement to highlight the absurdity of the situation, creating humor. The phrase \"made a splash\" is a common idiom, but here it's taken to an extreme, reflecting the surprise and mild bewilderment of the couple in the face of the enormous wave.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 52,
+    "contest_number": 105,
+    "original_id": "c2faf3a8cac3f59e1f304e18feeff01f"
+  },
+  {
+    "emotions": [
+      "humor",
+      "sadness",
+      "surprise"
+    ],
+    "confidence": [
+      0.8,
+      0.7,
+      0.6
+    ],
+    "explanation": "The image depicts angels in a mundane, almost comical situation (sitting on eggs). The worried expression of one angel adds to the humor and implies a sense of disappointment or sadness about their reproductive method. The original explanation reveals the element of surprise regarding how angels reproduce.",
+    "suggested_caption": "\"So, you're telling me we get our wings... to sit on eggs?\"",
+    "caption_explanation": "This caption encapsulates the humor by highlighting the unexpected and slightly absurd reason for angels having wings, as suggested by the original explanation. The quote is something the younger angel might say to the older angel. The sadness and surprise come from the fact that the younger angel is probably not happy about his wings being use as a warmer.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 1,
+        "emotion_name": "sadness"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      }
+    ],
+    "image_id": 53,
+    "contest_number": 118,
+    "original_id": "6041d86de9b66f687682522576e7b9c7"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The image is funny due to the absurdity of the interns' task. It's satirical as it mocks the often pointless and demeaning tasks assigned to interns. The situation is also confusing because it highlights the inefficiency and lack of logic in the depicted job.",
+    "suggested_caption": "Modern Office Automation: The Human In/Out Tray.",
+    "caption_explanation": "The caption uses 'Modern Office Automation' ironically, highlighting the contrast between the supposed technological advancement of offices and the ridiculously manual and inefficient task being performed. It emphasizes the humor and satire present in the image by presenting the interns as literal \"in/out\" trays.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 54,
+    "contest_number": 363,
+    "original_id": "f4f214bcc42a7e5b945c6950c26606c8"
+  },
+  {
+    "emotions": [
+      "humor",
+      "surprise",
+      "satire"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.7
+    ],
+    "explanation": "The image is inherently humorous due to the absurd level of hair growth. Surprise is evoked by the unexpected and extreme side effect of the medication. There's a satirical element commenting on the over-the-top promises and potential consequences of cosmetic treatments.",
+    "suggested_caption": "\"Results may vary,\" they said. Apparently, mine included becoming a chia pet.",
+    "caption_explanation": "The caption uses irony and exaggeration to highlight the humor in the situation. It references the common disclaimer in advertisements and connects the man's appearance to a chia pet, further emphasizing the absurdity and humor.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      }
+    ],
+    "image_id": 55,
+    "contest_number": 70,
+    "original_id": "09004902779588429d63ca06842b4326"
+  },
+  {
+    "emotions": [
+      "humor",
+      "surprise",
+      "satire"
+    ],
+    "confidence": [
+      0.95,
+      0.8,
+      0.7
+    ],
+    "explanation": "The presence of a centaur in a mundane setting like a pharmacy is inherently humorous due to the absurdity of the situation. The pharmacist's nonchalant attitude further enhances the humor. The situation also carries an element of surprise as we don't expect to see mythical creatures in everyday life. The humor is also subtly satirical, poking fun at the normalcy of bizarre situations and perhaps even the side effects of medication.",
+    "suggested_caption": "\"Just a refill on the usual, doc. You know, the one with the…*ahem*…unique side effects.\"",
+    "caption_explanation": "The caption highlights the humor by implying this transformation is a recurring issue due to the medication. The \"*ahem*...unique side effects\" is a comedic understatement of the centaur's condition. It also subtly incorporates satire by presenting something extraordinary as commonplace, amplified by the implied casual relationship with the doctor.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      }
+    ],
+    "image_id": 56,
+    "contest_number": 700,
+    "original_id": "8c87c93bc40521445072363686841cc3"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "sadness"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The image uses humor by placing the grim reaper with construction workers during their lunch break on a high beam. It's satirical because it highlights the dangerous working conditions faced by construction workers. There's an underlying sadness associated with the presence of death, representing the potential for accidents and fatalities in such a dangerous job.",
+    "suggested_caption": "Union Break: Death Takes a Lunch Shift",
+    "caption_explanation": "The title is humorous because it frames death as just another worker taking a break, playing on the familiar imagery of the 'Lunch Atop a Skyscraper' photo while hinting at the inherent risk of the job.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 1,
+        "emotion_name": "sadness"
+      }
+    ],
+    "image_id": 57,
+    "contest_number": 636,
+    "original_id": "3bdc30c63ea117e7f09b005e55184104"
+  },
+  {
+    "emotions": [
+      "sadness",
+      "humor",
+      "satire"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.7
+    ],
+    "explanation": "The comic evokes sadness through the man's dejected position at the end of the line, implying he's the last choice. Humor is present in the exaggerated setup of the chairs. Satire is used to critique the often dehumanizing job application process and corporate culture.",
+    "suggested_caption": "\"So, you're saying I'm your… last resort?\"",
+    "caption_explanation": "The caption captures the sadness of being a last choice while also employing a humorous tone through the man's almost rhetorical question. It satirizes the corporate interview process, highlighting the power dynamics and the often impersonal nature of recruitment.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 1,
+        "emotion_name": "sadness"
+      },
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      }
+    ],
+    "image_id": 58,
+    "contest_number": 550,
+    "original_id": "a5cd5cfe67b8cb98265441b1c3286658"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The image is funny because of the absurd situation of a giant cat casually looking into a window while a man remains nonchalant inside. It's satirical in its commentary on pet ownership and the potential consequences of domestication (albeit exaggerated). There's an element of confusion stemming from the unexpected scale of the cat and the man's seeming lack of surprise.",
+    "suggested_caption": "\"Yeah, it's just Mittens. Says he wants his tuna. Again.\"",
+    "caption_explanation": "The caption highlights the humor by implying that the giant cat's presence is a normal, recurring event. The nonchalant tone of the man on the phone further emphasizes the absurdity and satirical nature of the scene, while adding a touch of implied confusion for the viewer.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 59,
+    "contest_number": 438,
+    "original_id": "38694b357bb9cb1d16701ad695f1f55e"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "surprise"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The presence of a suited businessman among cavemen is inherently humorous and satirical, highlighting the absurdity of applying modern concepts like art valuation to a prehistoric context. The anachronism also evokes surprise.",
+    "suggested_caption": "\"I'm telling you, once we're gone, these wall doodles are going to be worth a fortune!\"",
+    "caption_explanation": "This caption encapsulates the humor and satire by placing the businessman's modern perspective into a caveman setting, emphasizing the absurdity of his statement about the value of cave paintings. It also conveys a sense of surprise at his awareness of future market value.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      }
+    ],
+    "image_id": 60,
+    "contest_number": 462,
+    "original_id": "103d7149e14801db42e2a00762439f39"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.7
+    ],
+    "explanation": "The image is humorous due to the absurdity of the man's attire. It's satirical because it pokes fun at the idea of saving money by simply wearing vacation gear instead of actually going on vacation. The other man's expression and likely thought process convey confusion at the sight.",
+    "suggested_caption": "\"Introducing Bob. He's living the 'staycation' dream, one accessory at a time.\"",
+    "caption_explanation": "This caption captures the humorous and satirical nature of the image by highlighting the ridiculousness of the man's 'staycation' approach. It subtly suggests the disconnect between wearing vacation gear and actually experiencing a vacation, adding to the comedic effect.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 61,
+    "contest_number": 175,
+    "original_id": "2fe8d051b2f11cde0649afd0146f008b"
+  },
+  {
+    "emotions": [
+      "humor",
+      "surprise",
+      "satire"
+    ],
+    "confidence": [
+      0.95,
+      0.8,
+      0.7
+    ],
+    "explanation": "The image is humorous due to the absurdity of a mouse dining in a restaurant like a human. There's surprise because of the unexpectedness of the situation. It's also satirical, commenting on the issue of pests in restaurants and presenting a role reversal.",
+    "suggested_caption": "\"I'll take the cheese platter, and could you please check the kitchen for allergens?\"",
+    "caption_explanation": "The caption highlights the humor by having the mouse, a known kitchen pest, ordering a stereotypically 'mouse' dish while displaying human-like concern for allergens, further emphasizing the role reversal and satirical element.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      }
+    ],
+    "image_id": 62,
+    "contest_number": 701,
+    "original_id": "89cdeb53814dd5d599a797e551ce7d7d"
+  },
+  {
+    "emotions": [
+      "humor",
+      "surprise",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.7
+    ],
+    "explanation": "The image depicts a surreal and humorous scene with a giant flying vacuum cleaner, evoking a sense of surprise and confusion as it defies logic and expectations. The people below look bewildered by the sight.",
+    "suggested_caption": "Well, this is one way to clean up the neighborhood...",
+    "caption_explanation": "The caption highlights the humor by making a mundane comment on the extraordinary event, implying a nonchalant acceptance of the absurdity. It also captures the element of surprise by suggesting an unexpected method of cleaning.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 63,
+    "contest_number": 586,
+    "original_id": "a730157ed39b0fdcf6b0407c40329b9f"
+  },
+  {
+    "emotions": [
+      "humor",
+      "surprise",
+      "satire"
+    ],
+    "confidence": [
+      0.9,
+      0.7,
+      0.6
+    ],
+    "explanation": "The cartoon is clearly humorous due to the absurdity of the extremely tall lifeguard tower. There's an element of surprise at the unexpected height. The situation also implies a satire on over-preparedness and perhaps bureaucratic excess.",
+    "suggested_caption": "When the Tides Get *Really* High.",
+    "caption_explanation": "The caption highlights the absurd situation in the cartoon, implying an extreme and unlikely event (extreme tides) requiring the comically tall lifeguard tower. This embodies the humor and satirical elements of the image, and inspires a sense of surprise from the viewer.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      }
+    ],
+    "image_id": 64,
+    "contest_number": 114,
+    "original_id": "45c51b781743089feae40d6d84d2afe9"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "surprise"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.7
+    ],
+    "explanation": "The cartoon style and the unexpected depiction of the Jolly Green Giant as destructive create humor. The situation is satirical, poking fun at the iconic character. The sight of a giant destroying a city is generally surprising, even in a cartoon.",
+    "suggested_caption": "Turns out, 'jolly' doesn't run in the family.",
+    "caption_explanation": "This caption plays on the original description of 'skipping a generation' and the typically 'jolly' nature of the Green Giant, contrasting it with the destructive behavior depicted in the image, thereby capturing the humor and satire.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      }
+    ],
+    "image_id": 65,
+    "contest_number": 315,
+    "original_id": "2fde1858782aa8c7628638f64c8771a9"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The presence of a hippo in a living room is inherently humorous. The woman's anger and the man's casual demeanor suggest a satirical commentary on relationships. The overall situation is confusing and absurd.",
+    "suggested_caption": "Honey, I shrunk the coffee table...and replaced it with a hippo.",
+    "caption_explanation": "This caption highlights the humor of the situation by playing on a familiar trope ('I shrunk the kids') while emphasizing the absurdity of using a hippo as a replacement for a coffee table. It also implies the relationship dynamic, where the man attempts to justify his ridiculous decision.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 66,
+    "contest_number": 311,
+    "original_id": "dcc6a7674b89cd11f1a80a586620a492"
+  },
+  {
+    "emotions": [
+      "humor",
+      "confusion",
+      "satire"
+    ],
+    "confidence": [
+      0.95,
+      0.85,
+      0.75
+    ],
+    "explanation": "The image depicts Death in a coffin, which is inherently humorous due to its ironic nature. The viewers' expressions suggest confusion about this impossible scenario. The entire scene satirizes the concept of death itself, poking fun at its seemingly absolute power.",
+    "suggested_caption": "Well, this is a paradox I didn't see coming.",
+    "caption_explanation": "The caption highlights the absurdity and unexpectedness of Death's demise, capturing the humor and confusion of the situation. It also subtly underscores the satirical commentary on mortality.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      }
+    ],
+    "image_id": 67,
+    "contest_number": 607,
+    "original_id": "c222348cfaaf2812cd53d6c74e23d353"
+  },
+  {
+    "emotions": [
+      "humor",
+      "surprise",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.7,
+      0.6
+    ],
+    "explanation": "The core of the comic is humorous due to the unexpected replacement of a dog with a snake on a leash. There's surprise in the unexpectedness of the snake and potential confusion for the dog owner upon realizing what the other person is walking.",
+    "suggested_caption": "\"He only eats Dachshunds,\" he assured, holding tightly to Mr. Snuggles.",
+    "caption_explanation": "The caption highlights the absurdity and humor of the situation, the reassurance adds another comedic layer by being strangely specific. It also suggests the snake's name, adding an additional layer of humor through juxtaposition.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 68,
+    "contest_number": 162,
+    "original_id": "6a71524461a4807a1c74cdf292789d8c"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "confusion"
+    ],
+    "confidence": [
+      0.95,
+      0.85,
+      0.6
+    ],
+    "explanation": "The cartoon is humorous because it depicts grim reapers in a meeting, which is an unexpected and absurd scenario. It's satirical as it mocks corporate modernization attempts, especially how they might apply to something as timeless as death. There's an element of confusion as to why death would even need a marketing department, which adds to the comedic effect.",
+    "suggested_caption": "\"Death, Rebranded: Now with 100% More Synergy!\"",
+    "caption_explanation": "The caption uses a common corporate buzzword (\"synergy\") to humorously suggest that death is being modernized and rebranded, highlighting the satire of applying corporate practices to something traditionally seen as unchanging and inevitable. It plays on the humor and absurdity of the situation.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 69,
+    "contest_number": 93,
+    "original_id": "c7cc4a7039d2016f8c16fcc89352bc6b"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The image is humorous due to the absurdity of using a grand piano as a conference table. It's satirical because it pokes fun at corporate culture and potentially the performative nature of meetings. The confusion arises from the illogical scenario itself, leaving the viewer to wonder why such a situation would occur.",
+    "suggested_caption": "Quarterly Results in C Major",
+    "caption_explanation": "This title plays on the musical context (piano, major key) while directly relating it to the business context of quarterly results. It captures the humor and absurdity of the scene by juxtaposing formal business with a musical setting.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 70,
+    "contest_number": 75,
+    "original_id": "dd30e5457fbe93c164e71f6719c1477c"
+  },
+  {
+    "emotions": [
+      "humor",
+      "sadness",
+      "surprise"
+    ],
+    "confidence": [
+      0.9,
+      0.7,
+      0.6
+    ],
+    "explanation": "The cartoon is humorous due to the absurd situation of building such a large tower in a sandbox and the Rapunzel reference. There's sadness because the girl is stuck and can't let the boy up, and a hint of surprise at the failed Rapunzel attempt.",
+    "suggested_caption": "She got a haircut. Rapunzel 2.0 problems.",
+    "caption_explanation": "The caption highlights the humor by referencing Rapunzel's hair, and implies the predicament the girl is in, reflecting the sadness and failed attempt.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 1,
+        "emotion_name": "sadness"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      }
+    ],
+    "image_id": 71,
+    "contest_number": 721,
+    "original_id": "13d52af0e8ecb435e2cb33e9218ba208"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The image depicts a ridiculous scenario (empty suit on trial) which is inherently humorous and satirical. The situation also creates a sense of confusion as to what is actually happening and who they are talking to.",
+    "suggested_caption": "The Ghost of Accountability Speaks Volumes.",
+    "caption_explanation": "This title uses humor to describe the absurd situation and critiques the lack of accountability in Congress, as the 'person' being questioned is literally an empty suit. It also hints at the confusion the scene generates.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 72,
+    "contest_number": 37,
+    "original_id": "cd621bc379cb4317a8b6ce2cfb716f7c"
+  },
+  {
+    "emotions": [
+      "humor",
+      "confusion",
+      "satire"
+    ],
+    "confidence": [
+      0.95,
+      0.8,
+      0.7
+    ],
+    "explanation": "The image is humorous due to the absurd scenario of a lobster attending a job interview. It evokes confusion as it defies logic and expectations. The situation is satirical, potentially commenting on the absurdity of modern corporate culture and the desperation of job seekers.",
+    "suggested_caption": "\"So, Mr. Pinchy, tell me about your experience at Red Lobster...\"",
+    "caption_explanation": "The caption highlights the humor and satire by directly referencing the lobster's unlikely previous employer, playing on the obvious conflict of interest and the inherent absurdity of the situation.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      }
+    ],
+    "image_id": 73,
+    "contest_number": 161,
+    "original_id": "c45357c88bd2e59b52df60f6a6ebacbb"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "sadness"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The presence of the vulture, typically associated with death and scavenging, juxtaposed with the man's mundane work activities creates a humorous and satirical effect. The man's nonchalant attitude towards his impending doom also contributes to the humor. However, beneath the humor lies a layer of sadness reflecting the potential despair or resignation of the man.",
+    "suggested_caption": "Hold my calls, I'm expecting a visitor...of the feathered variety.",
+    "caption_explanation": "The caption uses a humorous tone by referencing the man's work and expectations while hinting at the impending death represented by the vulture. It subtly conveys both humor and a underlying sense of sadness about the situation.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 1,
+        "emotion_name": "sadness"
+      }
+    ],
+    "image_id": 74,
+    "contest_number": 136,
+    "original_id": "8d765c41eeff9319df30c4002c2235f3"
+  },
+  {
+    "emotions": [
+      "humor",
+      "surprise",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.7,
+      0.6
+    ],
+    "explanation": "The core of the comic relies on humor through exaggeration (the enormous remote). The customers likely experience surprise and perhaps confusion at the sheer size of the remote, contributing to the overall comedic effect.",
+    "suggested_caption": "\"Yeah, but how am I supposed to find the volume button?\"",
+    "caption_explanation": "The caption adds to the humor by implying that even with a comically large remote, the basic frustrations of using a remote still exist, creating an ironic and relatable situation.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 75,
+    "contest_number": 414,
+    "original_id": "0d2207db54bc30abb0bd728981535bb9"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The presence of the ventriloquist dummy in a business setting creates a humorous and absurd scenario. The situation satirizes corporate blame-shifting and the awkwardness might cause some confusion about what is actually happening.",
+    "suggested_caption": "\"My client would like to file this report... and also deny all responsibility.\"",
+    "caption_explanation": "This title plays on the absurdity of a ventriloquist dummy submitting a report, while simultaneously satirizing the corporate practice of deflecting blame. It encapsulates the humor and slightly confusing nature of the scenario.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 76,
+    "contest_number": 616,
+    "original_id": "057c61a997d266b56971bb0a469706ac"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "sadness"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The image is humorous due to the absurdity of a chef in prison, still wearing his chef's hat, discussing his case. It's satirical because it highlights the often-absurd nature of legal proceedings. There's an underlying sadness due to the chef's predicament.",
+    "suggested_caption": "\"So, the pudding *really* backfired, huh?\"",
+    "caption_explanation": "The caption is humorous and subtly sad, acknowledging the chef's situation and the ironic twist of the original idiom, emphasizing the cause of his current imprisonment, the idiom being the proof is in the pudding.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 1,
+        "emotion_name": "sadness"
+      }
+    ],
+    "image_id": 77,
+    "contest_number": 610,
+    "original_id": "bbb654217ddfec71dde0e4cd5f12cb15"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "confusion"
+    ],
+    "confidence": [
+      0.95,
+      0.8,
+      0.7
+    ],
+    "explanation": "The presence of a lifeguard at an ice rink is inherently humorous and satirical, highlighting the absurdity of excessive safety measures. The skaters might also be confused by the lifeguard's presence.",
+    "suggested_caption": "Just in case the Zamboni malfunctions...and it's a really hot day.",
+    "caption_explanation": "This caption emphasizes the humor and satire by suggesting an unlikely series of events that would necessitate a lifeguard at an ice rink, highlighting the over-the-top safety measures in place.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 78,
+    "contest_number": 266,
+    "original_id": "b91fe68bdd8bd27bcdb5c0dd4ce978a8"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The image is humorous due to the absurd situation of grilling a briefcase. It's satirical because it comments on the drudgery and endless nature of work. The confusion arises from the illogical act itself, making the viewer question the situation.",
+    "suggested_caption": "Corporate Barbecue: Extra crispy deadlines tonight!",
+    "caption_explanation": "The caption uses a playful tone ('Corporate Barbecue') to highlight the humor. 'Extra crispy deadlines' reinforces the satire by linking the grilling to the pressure and never-ending nature of work.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 79,
+    "contest_number": 574,
+    "original_id": "36b435d8a2c64ac14b4cffab831d311b"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The image is humorous due to the absurd situation of a man calmly cancelling a meeting while sitting in an electric chair. It's satirical because it mocks the bureaucratic nature of even the most extreme circumstances. There's also a hint of confusion as the viewer tries to reconcile the mundane task with the impending doom.",
+    "suggested_caption": "“Sorry, I’ll have to reschedule that 12:01. Something came up.”",
+    "caption_explanation": "The caption highlights the humor and satire by juxtaposing the casualness of rescheduling a meeting with the seriousness of his impending execution. The phrase 'Something came up' is a huge understatement, adding to the comedic effect. The confusion arises from the reader's understanding of the situation.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 80,
+    "contest_number": 42,
+    "original_id": "14695ab964d50707f7c3208a884f1ce2"
+  },
+  {
+    "emotions": [
+      "humor",
+      "surprise",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.7
+    ],
+    "explanation": "The mismatched pole shapes are inherently humorous, the firefighters' expressions suggest surprise, and the unusual square pole introduces an element of confusion as to its purpose.",
+    "suggested_caption": "Square Peg, Round Hole... Or Pizza Delivery?",
+    "caption_explanation": "This title captures the humor by referencing the classic saying and hints at the absurdity of the square pole being for pizza delivery, as suggested in the original caption, thus incorporating both surprise and humor.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 81,
+    "contest_number": 754,
+    "original_id": "6b7217e2b073bf89dea4759b6cbd9a37"
+  },
+  {
+    "emotions": [
+      "humor",
+      "confusion",
+      "surprise"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.7
+    ],
+    "explanation": "The scene is absurd and unexpected, creating humor. The woman's expression conveys confusion and surprise at the farmer pouring slop into a trough at a restaurant table. The overall situation is incongruous and therefore funny.",
+    "suggested_caption": "\"Table for two, with a side of slop, please.\"",
+    "caption_explanation": "The caption emphasizes the incongruity of the situation, highlighting the unexpected presence of slop in a restaurant setting, thus emphasizing the humor and surprise.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      }
+    ],
+    "image_id": 82,
+    "contest_number": 696,
+    "original_id": "7bb9643f0a21cb9bf99d52a2ee478700"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The image depicts a judge in a courtroom, but with a basket of dishes on his desk, creating a humorous juxtaposition. This highlights a satirical commentary on the legal profession, possibly suggesting financial struggles or unconventional practices. The bailiff's presence and the overall absurd scene contribute to the confusion.",
+    "suggested_caption": "\"Your Honor, is that evidence, or did you just finish lunch?\"",
+    "caption_explanation": "The caption plays on the unexpected presence of the dishes, questioning whether they are related to the case or simply the judge's meal, further emphasizing the humor and confusion surrounding the scene.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 83,
+    "contest_number": 122,
+    "original_id": "67881b9544d3bb2a086659d4d34ebf45"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "surprise"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "漫画呈现了狮子吞食医生后场景的荒诞感，以及对“internal”一词的巧妙双关，因此具有幽默感和讽刺意味。散落在地上的医疗器械暗示了突发事件，带有一定的意外性。",
+    "suggested_caption": "“内科”医生？现在是真·内科医生了。",
+    "caption_explanation": "标题利用了“内科”医生的双关，既点明了医生被狮子吃掉的事实，又以一种戏谑的方式展现了漫画的幽默和讽刺意味。",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      }
+    ],
+    "image_id": 84,
+    "contest_number": 139,
+    "original_id": "9a9b6ae70f0aee91c29708827c5aadad"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The scene depicts a chaotic courtroom, a stark contrast to the expected order and formality, eliciting humor. The situation is also a satire on the importance of often overlooked jobs, such as janitors. The judge's expression amidst the chaos suggests a degree of confusion or bewilderment.",
+    "suggested_caption": "\"Order! I said ORDER! ...Or maybe just a really good cleaning service.\"",
+    "caption_explanation": "The caption plays on the judge's typical call for 'Order!' in the courtroom, contrasting it with the utter disarray. It subtly suggests the judge's realization of the janitor's importance and hints at the humor and satire present in the scene.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 85,
+    "contest_number": 176,
+    "original_id": "36d26506a2ccaeca8a200ed968823956"
+  },
+  {
+    "emotions": [
+      "humor",
+      "surprise",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.7
+    ],
+    "explanation": "The image is humorous due to the unexpected presence of a face on the climbing wall. The woman's expression suggests surprise and confusion at encountering this unusual climbing hold.",
+    "suggested_caption": "Rock Climbing...with Feelings?",
+    "caption_explanation": "This caption highlights the humor and surprise of the situation, suggesting that the climbing wall has taken on a life (or at least a face) of its own.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 86,
+    "contest_number": 629,
+    "original_id": "3ff52407ff3284bfe11cfbfa7a03bc5b"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "surprise"
+    ],
+    "confidence": [
+      0.95,
+      0.85,
+      0.6
+    ],
+    "explanation": "The image is humorous due to the absurd situation of catching a businessman instead of a fish. It is satirical because it comments on the ruthlessness of the business world, equating it to fishing. The businessman's presence in the water is surprising and unexpected, adding to the comedic effect.",
+    "suggested_caption": "\"Son, that's not a fish. That's *opportunity*.\"",
+    "caption_explanation": "The caption highlights the satirical element by framing the businessman as a valuable 'catch' in the business sense, contrasting with the typical expectations of a fishing trip. It is humorous due to the unexpected context and surprising nature of the situation.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      }
+    ],
+    "image_id": 87,
+    "contest_number": 444,
+    "original_id": "94ceeccb2bd21addeeaa901b6e38f975"
+  },
+  {
+    "emotions": [
+      "humor",
+      "surprise",
+      "confusion"
+    ],
+    "confidence": [
+      0.95,
+      0.85,
+      0.7
+    ],
+    "explanation": "The bird wearing a speedo is inherently humorous and unexpected. The birdwatchers' expressions suggest surprise and a degree of confusion at what they're seeing.",
+    "suggested_caption": "That's not in my bird book...",
+    "caption_explanation": "The caption plays on the unexpected and absurd sight, suggesting the birdwatchers are encountering something they've never seen or documented before, highlighting the humor, surprise, and confusion.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 88,
+    "contest_number": 103,
+    "original_id": "9370eac57b9a1d486762f4bd7671aca0"
+  },
+  {
+    "emotions": [
+      "humor",
+      "confusion",
+      "satire"
+    ],
+    "confidence": [
+      0.9,
+      0.7,
+      0.6
+    ],
+    "explanation": "The cartoon style and the unusual rock structure immediately suggest humor. The woman's posture and expression coupled with the man's placement on the rocks hint at confusion regarding the man's motivations and actions. The scenario satirizes human ambition and perhaps the beginnings of social hierarchy or unusual architectural endeavors.",
+    "suggested_caption": "\"I told you we needed a bigger TV, not a higher elevation!\"",
+    "caption_explanation": "The caption uses a modern complaint (bigger TV) juxtaposed against the primitive setting to highlight the humor. It also implies that the man's motivation for building the rock pile is misguided, adding to the satire and explaining the woman's confusion.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      }
+    ],
+    "image_id": 89,
+    "contest_number": 746,
+    "original_id": "39f7a79a67ea74b974c31c77fb921c87"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The scene depicts a serious crime, but the dialogue and the focus on the aesthetic detail (different sized buckets) introduce a strong element of dark humor. The situation is so absurd that it creates satire of the mob's image. The targeted victim's expression and the seemingly casual way in which the other mob member stands suggests confusion in the moment.",
+    "suggested_caption": "\"Different buckets? Seriously, Tony, we talked about presentation!\"",
+    "caption_explanation": "This caption encapsulates the humor by focusing on the absurd complaint about the bucket sizes, highlighting the mob boss's misplaced priorities and satirical nature.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 90,
+    "contest_number": 177,
+    "original_id": "78c609ffd33659bff1a77368624ca5d0"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The humor stems from the absurdity of cowboys riding chess pieces instead of real horses in the desert. Satire is present as it mocks the classic Wild West showdown trope by replacing it with a game of chess. Confusion arises from the illogical juxtaposition of the two settings.",
+    "suggested_caption": "Checkmate at High Noon.",
+    "caption_explanation": "This title plays on the classic Western showdown phrase 'High Noon' but replaces the expected gunfight with a chess term 'Checkmate', highlighting the humor and satire of the image by contrasting the expected and the actual.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 91,
+    "contest_number": 399,
+    "original_id": "985c72ce0461f9ab68a56ba4dcf1d020"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The image depicts a ridiculous scenario, a rat with strapped-on wings, creating humor. It satirizes the often mundane and potentially dangerous lives of test animals. The pigeon's presence adds to the absurdity and possible confusion of the scene.",
+    "suggested_caption": "\"Hey, at least these wings aren't testing a new breakfast cereal.\"",
+    "caption_explanation": "The caption combines the humor of the situation with a slightly darker satire regarding animal testing. It provides a humorous response from the rat to the pigeon, implying that previous testing experiences were much worse.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 92,
+    "contest_number": 611,
+    "original_id": "21e977a2e1ba54071a229d4b93f94f48"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The image depicts a surreal situation – a couple living in a bird's nest as a living room. This absurdity lends itself to humor. The concept of a 'woman nest' built in response to a 'man cave' suggests a satirical commentary on gender roles and domestic spaces. The unexpectedness of the scenario also creates a sense of confusion for the viewer.",
+    "suggested_caption": "\"Honey, I think we're ready to feather our nest... with a bigger TV.\"",
+    "caption_explanation": "The caption plays on the double meaning of 'feather our nest', referring both to improving their domestic life and literally adding feathers to their nest. The addition of the TV adds to the humor by juxtaposing a modern convenience with their primitive living situation.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 93,
+    "contest_number": 379,
+    "original_id": "f3ab34ee8946580106d0490476d77f9a"
+  },
+  {
+    "emotions": [
+      "humor",
+      "surprise",
+      "satire"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.7
+    ],
+    "explanation": "The image is inherently humorous due to the unexpected presence of a yoga ball at the mountain top. The hiker's surprise at this unusual sight is implied. The image also satirizes the trope of the wise old mountain man.",
+    "suggested_caption": "Mountain Top Relaxation: Now with Added Core Stability!",
+    "caption_explanation": "The caption highlights the humor and absurdity of finding a yoga ball on a mountain, playing on the idea of 'mountain top relaxation' with a modern twist.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      }
+    ],
+    "image_id": 94,
+    "contest_number": 598,
+    "original_id": "9d1eff1e1448ae2e54fec3135a01c43a"
+  },
+  {
+    "emotions": [
+      "humor",
+      "confusion",
+      "satire"
+    ],
+    "confidence": [
+      0.95,
+      0.8,
+      0.7
+    ],
+    "explanation": "The scene is inherently humorous due to the absurdity of a patient using a rocket ride during therapy. There is also confusion evoked by the unconventional therapy method. The cartoon subtly satirizes the unconventional or outlandish approaches sometimes taken in therapy.",
+    "suggested_caption": "\"So, tell me about your issues... one quarter at a time.\"",
+    "caption_explanation": "The caption adds another layer of humor by referencing the coin-operated nature of the rocket ride, suggesting the therapy itself is transactional and perhaps even exploitative.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      }
+    ],
+    "image_id": 95,
+    "contest_number": 212,
+    "original_id": "b9da5f61d541df2f5861b90d4e59e993"
+  },
+  {
+    "emotions": [
+      "humor",
+      "surprise",
+      "satire"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The image presents a humorous situation with dinosaur skeletons dressed in formal wear, engaging in a dance, which is unexpected and satirizes the typical museum display of fossils.",
+    "suggested_caption": "Dino Night Fever: A Museum After Dark.",
+    "caption_explanation": "The title \"Dino Night Fever: A Museum After Dark\" combines the humor of the dancing dinosaurs with the unexpected twist of it happening at night. It's lighthearted and creates a sense of fun and satire of museum displays.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      }
+    ],
+    "image_id": 96,
+    "contest_number": 329,
+    "original_id": "8cf73e8fb6b547ec693868c7f5a85f36"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "surprise"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The scene presents a humorous juxtaposition of royalty and leisure, suggesting a satirical take on the responsibilities of kingship. The unexpected presence of a hammock instead of a throne creates a sense of surprise.",
+    "suggested_caption": "Royal Decree: Hammock Time is Mandatory.",
+    "caption_explanation": "This caption highlights the humor and satire by suggesting the kings have prioritized relaxation over traditional royal duties, creating a lighthearted and unexpected scenario.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      }
+    ],
+    "image_id": 97,
+    "contest_number": 729,
+    "original_id": "53763bb02a55450d358c077dc1c6e828"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The image is humorous due to the absurdity of roping off a yard for raking leaves. It's satirical because it mocks the idea of treating mundane tasks with excessive formality or importance. The setup also evokes confusion as to why such measures are in place.",
+    "suggested_caption": "VIP Leaf Removal: By Invitation Only",
+    "caption_explanation": "The caption emphasizes the humor and satire by framing the leaf raking as an exclusive, high-status event. The 'VIP' and 'by invitation only' aspects highlight the over-the-top nature of the situation.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 98,
+    "contest_number": 637,
+    "original_id": "7a93a2d63a4d683f77797bd08f52d6ad"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "surprise"
+    ],
+    "confidence": [
+      0.95,
+      0.9,
+      0.7
+    ],
+    "explanation": "The image is humorous due to the absurdity of the Supreme Court justices conducting business in bed. It's satirical because it comments on the potential laziness or lack of engagement of those in power. The speaker's apparent shock and bewilderment at the scene creates a sense of surprise.",
+    "suggested_caption": "Justice Sleeps: The Supreme Court's Newest Adjournment?",
+    "caption_explanation": "This title combines the humor and satire of the image by playfully suggesting that the Supreme Court is not just taking a break, but literally conducting business from their beds. It also hints at the surprised reaction one might have upon seeing this bizarre scene.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      }
+    ],
+    "image_id": 99,
+    "contest_number": 229,
+    "original_id": "944624724053272077492f43cb0613fe"
+  },
+  {
+    "emotions": [
+      "humor",
+      "confusion",
+      "surprise"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The presence of apple pie, a decidedly modern invention, in the Garden of Eden is anachronistic and humorous. Adam's reaction suggests confusion and surprise at this unexpected offering.",
+    "suggested_caption": "Eve's original sin: introducing Adam to processed food.",
+    "caption_explanation": "This caption highlights the humor stemming from the anachronism of apple pie in Eden and implies that Eve offering it is akin to the original sin, but with a modern twist related to processed food.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      }
+    ],
+    "image_id": 100,
+    "contest_number": 557,
+    "original_id": "f67ca76d11095e75897fea4e2af8bf6b"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "surprise"
+    ],
+    "confidence": [
+      0.9,
+      0.7,
+      0.6
+    ],
+    "explanation": "The image is humorous due to the absurdity of a skeleton fish conversing with a living fish. It's satirical in the way it plays with life and death in an unexpected setting. The living fish might be surprised to see the other fish in that condition, even if this is normal in their world.",
+    "suggested_caption": "\"You're looking a little... bony today, Frank.\"",
+    "caption_explanation": "The caption adds a layer of humor by using a common, polite greeting in an absurd situation, highlighting the fish skeleton's obvious lack of flesh.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      }
+    ],
+    "image_id": 101,
+    "contest_number": 441,
+    "original_id": "bb31f09ad089bec8e385062f1577a9e6"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "surprise"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The image depicts a knight dueling a dragon with swords, a somewhat absurd and unexpected scenario. The dragon also wields a sword instead of using fire, adding to the humor and satire. The surprise stems from the unexpected weapon choice for a dragon.",
+    "suggested_caption": "Negotiations with HR are getting heated. (Dragon Edition)",
+    "caption_explanation": "This title uses a modern, relatable scenario (HR negotiations) and applies it to the fantastical dragon fight. It generates humor by contrasting the epic image with mundane workplace disputes and implies the dragon is in a corporate dispute needing resolution, mirroring the intensity of the duel in the picture. The 'Dragon Edition' adds a touch of surprise and absurdity.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      }
+    ],
+    "image_id": 102,
+    "contest_number": 524,
+    "original_id": "db466beb7ea7130a4cce3ffa8378b852"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The image presents a darkly humorous situation with a man receiving an IV drip in his casket. The scene satirizes the concept of funerals and the lengths people go to, perhaps questioning the true nature of 'death.' The IV drip on a corpse creates confusion and absurdity.",
+    "suggested_caption": "\"He's not dead yet. We're just charging him up for the afterlife.\"",
+    "caption_explanation": "The caption adds to the humor by giving a ridiculous reason for the IV drip, highlighting the absurdity of the scene and satirizing beliefs about the afterlife. It plays on the confusion and unexpectedness of the visual.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 103,
+    "contest_number": 367,
+    "original_id": "16af525cab5583471510a21ab4d16388"
+  },
+  {
+    "emotions": [
+      "humor",
+      "surprise",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The image's humor comes from the absurdity of a giant, angry honey bear bottle encountering hikers. The hikers' expressions clearly show surprise and confusion at this unexpected sight.",
+    "suggested_caption": "\"I told you bringing the honey bear on this hike was a bad idea.\"",
+    "caption_explanation": "The caption highlights the humorous absurdity of the situation, implying the honey bear bottle is somehow responsible for its own existence and anger, while also emphasizing the hikers' surprise and potential confusion about the situation.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 104,
+    "contest_number": 685,
+    "original_id": "350c7fa8cd34f56ea9a35868478536d2"
+  },
+  {
+    "emotions": [
+      "humor",
+      "surprise",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The image is humorous due to the unexpected scenario of tiny people dining inside a pizza box. Surprise is evoked by the discovery of the miniature scene. Confusion arises from the absurdity of the situation.",
+    "suggested_caption": "Extra Toppings: A Couple's Night In.",
+    "caption_explanation": "This title plays on the idea of 'extra toppings' being the little couple inside the pizza box, and subtly hints at the scene being a miniature 'date night' for them. It encapsulates the humor and surprise of the image in a concise way.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 105,
+    "contest_number": 663,
+    "original_id": "13c49aa118fdbf9acd8970eb2a155aeb"
+  },
+  {
+    "emotions": [
+      "humor",
+      "confusion",
+      "sadness"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The image is humorous due to the absurd situation of a man with lobster claws. There's an element of confusion as to why he has them and how the woman is reacting. The woman's upset expression suggests sadness or frustration with the bizarre situation.",
+    "suggested_caption": "He promised he'd changed, but I guess some habits are hard to claw back.",
+    "caption_explanation": "The caption plays on the lobster claw theme, implying a troubled relationship where the man's peculiar behavior (the claws) is causing distress. It combines humor with a hint of sadness about the relationship dynamic.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      },
+      {
+        "emotion_index": 1,
+        "emotion_name": "sadness"
+      }
+    ],
+    "image_id": 106,
+    "contest_number": 681,
+    "original_id": "b722a361ca804a17f970e4116b6e60c3"
+  },
+  {
+    "emotions": [
+      "humor",
+      "surprise",
+      "confusion"
+    ],
+    "confidence": [
+      0.95,
+      0.8,
+      0.7
+    ],
+    "explanation": "The image is humorous due to the absurdity of the woman carrying a man like luggage. The woman's expression and the overall scenario elicit surprise and confusion, as it's unclear why she's carrying him in this manner. The literal interpretation of 'finding another man' contributes significantly to the humor.",
+    "suggested_caption": "Honey, I'm home! And look what I found on the way.",
+    "caption_explanation": "The caption plays on the classic 'Honey, I'm home!' phrase, adding a humorous twist by suggesting the man is an unusual 'find'. This embodies the surprise and absurdity of the image, contributing to the overall humor.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 107,
+    "contest_number": 504,
+    "original_id": "898f6f8da7b66dadebe38231025da3d9"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The scene is inherently humorous due to the absurdity of a man covered in Cupid's arrows seeking therapy with a disgruntled Cupid present. It's satirical because it pokes fun at the romantic idealization often associated with Cupid and love. There's an element of confusion as to why Cupid is angry and the man needs so much help.",
+    "suggested_caption": "\"It's complicated,\" he explained, gesturing vaguely at the angry cupid.",
+    "caption_explanation": "The caption captures the humor and absurdity of the situation, hinting at the messy, complex, and perhaps problematic nature of love as depicted in the cartoon. The phrase \"It's complicated\" is a common understatement for complex emotional situations, and adds to the humor.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 108,
+    "contest_number": 416,
+    "original_id": "6380e5c5309db4befdb19f370e9eb9c0"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The juxtaposition of a caveman and a limousine is inherently humorous. The rich person's demand for the caveman to invent a job is satirical, commenting on societal expectations and wealth disparity. The caveman's perspective in this absurd situation would likely be one of confusion.",
+    "suggested_caption": "\"Invent a job,\" said the one-percent, from the comfort of their time machine.",
+    "caption_explanation": "The caption highlights the humor and satire by emphasizing the time difference and the absurdity of the rich person's request. It also hints at the underlying commentary on social inequality.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 109,
+    "contest_number": 475,
+    "original_id": "ba16cfdd1dd4765afd22a8b84500433e"
+  },
+  {
+    "emotions": [
+      "humor",
+      "surprise",
+      "satire"
+    ],
+    "confidence": [
+      0.95,
+      0.8,
+      0.7
+    ],
+    "explanation": "The oversized needle is inherently humorous, creating a comical exaggeration of a common fear. The patient's surprise and apprehension are palpable. The cartoon satirizes the often-downplayed reality of injection discomfort, contrasting it with the typically reassuring medical demeanor.",
+    "suggested_caption": "\"Don't worry, it might sting... for days.\"",
+    "caption_explanation": "The caption plays on the common reassurance given before injections, but with a darkly humorous twist, acknowledging the enormous size of the needle and the likely pain, therefore combining humor and satire.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      }
+    ],
+    "image_id": 110,
+    "contest_number": 419,
+    "original_id": "f81931deb72865ad85237e43e770abbc"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "surprise"
+    ],
+    "confidence": [
+      0.95,
+      0.8,
+      0.6
+    ],
+    "explanation": "The image of cowboys and police officers riding rocking horses in a desert setting is inherently humorous. The situation satirizes the typical high-speed chases seen in Western films. The image also evokes a sense of surprise due to the unexpected juxtaposition of rugged cowboys with childish toys.",
+    "suggested_caption": "The Great Rocking Horse Roundup.",
+    "caption_explanation": "This title is humorous because it uses a familiar Western phrase ('Great Roundup') but replaces 'cattle' with the absurd 'Rocking Horse.' It also hints at the surprise of the scene.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      }
+    ],
+    "image_id": 111,
+    "contest_number": 514,
+    "original_id": "42ae8d5cf2ea827d08dca6738fef0e41"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "sadness"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The comic uses a dark and absurd situation (a man repeatedly failing to commit suicide while his wife remains unconcerned) to create humor. It satirizes marital apathy and the trivialization of serious issues. Underlying all of this is the sadness of the man's situation and the apparent dysfunctionality of the relationship.",
+    "suggested_caption": "\"Darling, you missed again! And you're wasting the good bullets!\"",
+    "caption_explanation": "This caption highlights the wife's detached and pragmatic reaction to the man's suicide attempt, emphasizing the humor and satire stemming from the absurdity of the situation. It also hints at the deeper sadness of the man's desperation and the couple's fractured relationship.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 1,
+        "emotion_name": "sadness"
+      }
+    ],
+    "image_id": 112,
+    "contest_number": 150,
+    "original_id": "391a4738f4af80b2359102efb1fa395e"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "surprise"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The humor comes from the absurd situation of a pig literally turning itself into a piggy bank to address financial concerns. The satire is present in the commentary on the extreme measures people take for financial gain. The surprise comes from the unexpected transformation of the pig.",
+    "suggested_caption": "\"Well, at least my surgery paid for itself... literally.\"",
+    "caption_explanation": "This caption reflects the humor and satire by highlighting the pig's absurd transformation and its direct financial benefit. It captures the surprise element by implying an unexpected outcome.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      }
+    ],
+    "image_id": 113,
+    "contest_number": 451,
+    "original_id": "ded2d9b5eeea9526aea36b0d695c8107"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "surprise"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The scene is humorous due to the absurd juxtaposition of a man dying of thirst and a lawyer focused on profit. It's satirical because it critiques the perceived greed of lawyers. The man dying of thirst is surprised to see a suited lawyer instead of help.",
+    "suggested_caption": "\"Before I offer you water, let's discuss my hourly rate.\"",
+    "caption_explanation": "The caption highlights the lawyer's cold pragmatism and prioritizes monetary gain over human compassion, amplifying the humor and satire present in the cartoon.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      }
+    ],
+    "image_id": 114,
+    "contest_number": 194,
+    "original_id": "baec61e9b50c04a7067ff64229f4e506"
+  },
+  {
+    "emotions": [
+      "humor",
+      "surprise",
+      "confusion"
+    ],
+    "confidence": [
+      0.95,
+      0.8,
+      0.7
+    ],
+    "explanation": "The cartoon's exaggerated scale difference between the boxers and the referee is inherently humorous. The referee's expression suggests both surprise at the boxers' size and confusion about his role in this unusual situation. The image subverts expectations, creating a comical and slightly absurd scenario.",
+    "suggested_caption": "\"Alright, gentlemen, touch gloves... if you can find them!\"",
+    "caption_explanation": "This caption emphasizes the humor stemming from the boxers' immense size and the referee's predicament. It plays on the traditional boxing ritual while highlighting the impossibility of it given the scale disparity.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 115,
+    "contest_number": 215,
+    "original_id": "10cd8c9d8943b65c79358d5fb23f0c5e"
+  },
+  {
+    "emotions": [
+      "surprise",
+      "humor",
+      "confusion"
+    ],
+    "confidence": [
+      0.95,
+      0.85,
+      0.7
+    ],
+    "explanation": "The image depicts a highly unexpected event - a sword bursting through a desk. This leads to surprise and confusion on the part of the office workers. The absurdity of the situation also lends itself to humor.",
+    "suggested_caption": "\"I think we need a new cybersecurity protocol.\"",
+    "caption_explanation": "The caption plays on the contrast between the expected 'cybersecurity' threat and the literal, physical threat of a sword attack. It highlights the surprise and absurdity of the situation, contributing to the humor.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      },
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 116,
+    "contest_number": 498,
+    "original_id": "e4f1fa2b1da52cf80fe3a335ea39c6b2"
+  },
+  {
+    "emotions": [
+      "humor",
+      "surprise",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.7
+    ],
+    "explanation": "The presence of a giraffe emerging from a hole in the floor is inherently humorous and surprising. The couple's calm reaction adds to the humor, as if they're trying to ignore something utterly bizarre, leading to a sense of confusion for the viewer about the normalcy of the situation.",
+    "suggested_caption": "\"So, are we just going to ignore Kevin, or...?\"",
+    "caption_explanation": "The caption highlights the humor by implying the giraffe is a known entity (Kevin) and the couple is attempting to avoid addressing the absurd situation. The question mark further emphasizes the confusion and comedic effect of the scene.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 117,
+    "contest_number": 717,
+    "original_id": "c903e336901968cb424184c7e3d6724e"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The comic depicts a man presenting a giant wheel (or donut) as a novel invention, which is inherently humorous and satirical. The women's expected reaction of feigned surprise also contributes to the humor. The man's obliviousness to the wheel's existing status indicates confusion, and the setup as a whole is designed to be amusing.",
+    "suggested_caption": "\"And I call it... the Roundy Thing!\"",
+    "caption_explanation": "This title emphasizes the absurdity of the man's invention, and the simple name highlights his lack of awareness, thus contributing to the humor and satire. It also implies a sense of wonder or excitement from the man's side which makes it even more funny.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 118,
+    "contest_number": 537,
+    "original_id": "08b724ee9047b948c792f7b1fbe4a339"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The presence of a skeleton dressed as a waitress in a life raft with two men implies dark humor. The situation is absurd and creates a satirical commentary on survival and potentially cannibalism. It also evokes confusion, as it's unclear how the skeleton got there and why the men are so nonchalant.",
+    "suggested_caption": "\"I told you we should have packed more snacks, now it's just awkward.\"",
+    "caption_explanation": "The caption creates a humorous contrast between the dire situation and the casual conversation, highlighting the absurdity and dark humor of the scene. The \"awkward\" part adds a layer of satire, suggesting that the social implications of cannibalism are more concerning than the act itself.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 119,
+    "contest_number": 180,
+    "original_id": "94afdc0b2ba69a52321216126584b2d6"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.7
+    ],
+    "explanation": "The scene is inherently absurd and humorous due to the doctor seemingly unaware of the dead patient. It also satirizes the medical profession's potential for detachment or incompetence. The doctor's obliviousness creates a sense of confusion.",
+    "suggested_caption": "\"And when did you first notice the...stiffness?\"",
+    "caption_explanation": "The caption highlights the doctor's oblivious question about stiffness, playing on the humor and absurdity of the situation, while also subtly hinting at the satire of the medical profession.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 120,
+    "contest_number": 345,
+    "original_id": "bb479a5b86d23d8f6fc75dabc929998a"
+  },
+  {
+    "emotions": [
+      "humor",
+      "confusion",
+      "surprise"
+    ],
+    "confidence": [
+      0.9,
+      0.7,
+      0.6
+    ],
+    "explanation": "The image is humorous due to the exaggerated shaking from caffeine intake. Confusion is present because the diner patron seems skeptical. Surprise is reflected in the man's reaction to the coffee's effects.",
+    "suggested_caption": "\"Just one more cup! I can quit anytime!\"",
+    "caption_explanation": "The caption highlights the humor by exaggerating the man's denial of his caffeine addiction, adding to the comedic effect of his jittery state. It also implies the surprise of the addiction.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      }
+    ],
+    "image_id": 121,
+    "contest_number": 349,
+    "original_id": "b45d51f79786bb0c41d616d7541cc062"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The image presents a humorous and satirical situation – a scientist with a mouse head working in a lab. This absurdity creates a sense of humor. It's also satirical, as it plays on the common scientific practice of experimenting on mice. The human scientist's normal demeanor in the face of this abnormality adds to the confusion.",
+    "suggested_caption": "\"And remember, Reginald, always follow the cheese.\"\"",
+    "caption_explanation": "The caption adds to the humor by giving the mouse-headed scientist a human name (Reginald) and implying that the direction given is absurdly simple and mouse-centric, which is a satire of the mouse mazes used in testing.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 122,
+    "contest_number": 730,
+    "original_id": "0ebfebc57859eb0d89b359d7a8433133"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "confusion"
+    ],
+    "confidence": [
+      0.95,
+      0.85,
+      0.7
+    ],
+    "explanation": "The image is humorous due to the absurd situation of a policeman explaining complex math equations for a traffic violation. It's satirical because it mocks the increasing complexity and unintelligibility of modern laws. The driver's likely confusion adds to the humor and highlights the satire.",
+    "suggested_caption": "\"Sir, you were traveling at the square root of excessive plus differentials...\"",
+    "caption_explanation": "The caption captures the humor by suggesting the policeman is using the complex math equations to explain the driver's speeding violation. It also hints at the satire by implying the law's complexities are absurd.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 123,
+    "contest_number": 385,
+    "original_id": "2640d548cae409eb844b3f9a5efde19a"
+  },
+  {
+    "emotions": [
+      "humor",
+      "confusion",
+      "sadness"
+    ],
+    "confidence": [
+      0.9,
+      0.7,
+      0.6
+    ],
+    "explanation": "The headless angel is inherently humorous due to the unexpected nature of a normally serene figure missing a crucial body part. The other angels' expressions suggest confusion, as they are perhaps unsure how to react to this situation. There is a subtle sadness implied as the headless angel is likely in an unenviable position.",
+    "suggested_caption": "\"Well, at least the halo still fits...\"",
+    "caption_explanation": "This caption uses dark humor to highlight the absurdity of the situation, while also acknowledging a somewhat sad reality. The phrase plays on the idea that even in a headless state, some semblance of angelic status remains, offering a darkly humorous take on a tragic scene.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      },
+      {
+        "emotion_index": 1,
+        "emotion_name": "sadness"
+      }
+    ],
+    "image_id": 124,
+    "contest_number": 251,
+    "original_id": "dd29a21a96e2db5f9ad762cc79b56b9f"
+  },
+  {
+    "emotions": [
+      "humor",
+      "confusion",
+      "surprise"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.7
+    ],
+    "explanation": "The image depicts a bizarre scenario of safes falling from the sky instead of rain, which is inherently humorous due to its absurdity. The couple's reaction suggests confusion and surprise at this unusual weather event. ",
+    "suggested_caption": "Honey, I think we need to increase our homeowner's insurance...for falling safes.",
+    "caption_explanation": "The caption adds to the humor by presenting this absurd event as a mundane insurance concern, further highlighting the unexpected and ridiculous nature of the situation.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      }
+    ],
+    "image_id": 125,
+    "contest_number": 131,
+    "original_id": "165f82f46918275db2ea836277790fc8"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The cartoon depicts a man in bed, upright, seemingly at work, which is inherently humorous. It satirizes the modern work culture's emphasis on productivity and potentially the lengths people will go to 'optimize' their work. The boss's reaction suggests confusion and disapproval, adding to the overall comical effect.",
+    "suggested_caption": "\"Sleeping desk: Productivity's next frontier, or just my excuse for being late?\"",
+    "caption_explanation": "The caption uses humor to highlight the absurdity of the sleeping desk concept, while also suggesting a possible underlying motivation for the employee's actions, subtly satirizing work culture expectations and the lengths some might go to avoid work.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 126,
+    "contest_number": 567,
+    "original_id": "f5de4f6aa180528921c2cb809cd56d20"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "confusion"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The scene is absurd and humorous, contrasting the relaxing vacation imagery with the mundane subway setting. It's satirical because it mocks the idea of escaping reality and the disparity between the rich and the poor. The businessman's confusion is evident in his expression and presence in the scene.",
+    "suggested_caption": "\"Brother, Can You Spare a Lime?\"",
+    "caption_explanation": "The caption is a playful take on the original song about economic hardship, contrasting it with the man's leisurely vacation. It highlights the humor and satire present in the image, while also subtly conveying the confusion the businessman likely feels.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      }
+    ],
+    "image_id": 127,
+    "contest_number": 210,
+    "original_id": "53aff0ef725054dba8621ced3ceeb67f"
+  },
+  {
+    "emotions": [
+      "humor",
+      "confusion",
+      "surprise"
+    ],
+    "confidence": [
+      0.9,
+      0.7,
+      0.6
+    ],
+    "explanation": "The image depicts an unusual scenario (fishing in the bedroom), which is inherently humorous. The woman's expression suggests she's somewhat confused by the situation. The viewer is likely to be surprised by the scene as well.",
+    "suggested_caption": "\"Honey, I told you I needed a hobby!\"",
+    "caption_explanation": "This caption adds dialogue to the scene, reinforcing the humorous and slightly absurd situation. It suggests the man's fishing hobby has gone to an unexpected level, hence adding to the humor.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 4,
+        "emotion_name": "confusion"
+      },
+      {
+        "emotion_index": 5,
+        "emotion_name": "surprise"
+      }
+    ],
+    "image_id": 128,
+    "contest_number": 492,
+    "original_id": "b9aeac5036aba8783eef6136c44eca36"
+  },
+  {
+    "emotions": [
+      "humor",
+      "satire",
+      "embarrassment"
+    ],
+    "confidence": [
+      0.9,
+      0.8,
+      0.6
+    ],
+    "explanation": "The image is humorous because of the absurdity of wearing a head-mounted camera at a party. It's satirical because it comments on the modern obsession with recording everything. There's also a sense of embarrassment for the camera-wearer, who is seemingly being ignored by the other guests.",
+    "suggested_caption": "\"Don't mind me, I'm just archiving the awkward silence for posterity.\"",
+    "caption_explanation": "The caption captures the humor and satire by suggesting that the man is intentionally recording an awkward social situation, emphasizing the absurdity of documenting everything and highlighting the potential for social awkwardness. It implies a self-aware embarrassment on the part of the camera wearer.",
+    "emotions_with_indices": [
+      {
+        "emotion_index": 2,
+        "emotion_name": "humor"
+      },
+      {
+        "emotion_index": 3,
+        "emotion_name": "satire"
+      },
+      {
+        "emotion_index": 6,
+        "emotion_name": "embarrassment"
+      }
+    ],
+    "image_id": 129,
+    "contest_number": 431,
+    "original_id": "681e9cfd81f5bc657318241756650634"
+  }
+]
