@@ -1,6 +1,7 @@
 import os
 import torch
 import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 from tqdm import tqdm
 from emotion_enhanced_blip.models.emotion_caption_model import EmotionEnhancedBlipForCaption
 # 导入正确的 collate_fn 和数据集类
