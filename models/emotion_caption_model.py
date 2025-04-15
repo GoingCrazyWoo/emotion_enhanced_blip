@@ -495,6 +495,7 @@ class EmotionEnhancedBlipForCaption(nn.Module):
             
         # 调用BLIP的生成方法
         outputs = self.blip_model.generate(
+            pixel_values=pixel_values,
             input_ids=input_ids,
             attention_mask=attention_mask,
             encoder_hidden_states=enhanced_image_embeds,
