@@ -1,13 +1,12 @@
 import os
 import torch
 import sys
-sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 from tqdm import tqdm
-from models.emotion_caption_model import EmotionEnhancedBlipForCaption
-from data.newyorker_dataset import NewYorkerCaptionDataset
+from emotion_enhanced_blip.models.emotion_caption_model import EmotionEnhancedBlipForCaption
+from emotion_enhanced_blip.data.newyorker_dataset import NewYorkerCaptionDataset
 from transformers import BlipProcessor
 import evaluate  # huggingface evaluate库，支持BLEU/ROUGE/CIDEr等
-from utils.emotion_utils import EMOTION_CATEGORIES  # 如有需要
+from emotion_enhanced_blip.utils.emotion_utils import EMOTION_CATEGORIES  # 如有需要
 
 def load_model(model_path, device, blip_model_name, proxy=None):
     model = EmotionEnhancedBlipForCaption(
