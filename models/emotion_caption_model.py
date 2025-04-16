@@ -205,6 +205,7 @@ class EmotionEnhancedBlipForCaption(nn.Module):
         try:
             logger.info(f"加载BLIP模型: {blip_model_name}")
             proxies = {"http": proxy, "https": proxy} if proxy else None
+            self.processor = BlipProcessor.from_pretrained(blip_model_name, proxies=proxies)
             self.blip_model = BlipForConditionalGeneration.from_pretrained(
                 blip_model_name,
                 proxies=proxies
@@ -474,7 +475,7 @@ class EmotionEnhancedBlipForCaption(nn.Module):
         # 应用情感增强
         enhanced_image_embeds = image_embeds + gate * expanded_emotion
         
-        # 使用增强的图像特征进行生成
+        # 设置生成参数
         if "max_length" not in generate_kwargs:
             generate_kwargs["max_length"] = 100
         
@@ -493,62 +494,22 @@ class EmotionEnhancedBlipForCaption(nn.Module):
         if "top_p" not in generate_kwargs:
             generate_kwargs["top_p"] = 0.9
             
-        # 准备解码器的起始输入
-        batch_size = pixel_values.shape[0]
-        decoder_start_token_id = self.blip_model.config.text_config.bos_token_id
-        # 确保 self.device 存在且正确设置，或者从 pixel_values 获取设备
-        device = pixel_values.device
-        start_ids = torch.ones((batch_size, 1), dtype=torch.long, device=device) * decoder_start_token_id
-        start_attention_mask = torch.ones((batch_size, 1), dtype=torch.long, device=device)
-
-        # --- 自定义贪婪解码循环 ---
-        # 获取配置
-        max_length = generate_kwargs.get("max_length", 100) # 使用传入的或默认值
-        eos_token_id = self.blip_model.config.text_config.eos_token_id
+        # 保存原始图像特征
+        original_last_hidden_state = self.blip_model.vision_model.last_hidden_state
         
-        # 初始化生成的序列
-        generated_ids = start_ids # start_ids 形状是 [batch_size, 1]
-
-        for _ in range(max_length - 1): # -1 因为已经有起始 token
-            # 准备解码器输入
-            current_attention_mask = torch.ones_like(generated_ids)
-
-            # 调用模型 forward (或解码器部分)
-            # 注意：这里直接调用 blip_model 的 forward，它内部会处理编码器和解码器
-            # 我们需要确保它能正确使用我们提供的 encoder_hidden_states
-            # transformers 的 BlipForConditionalGeneration.forward 接受 encoder_outputs
-            # 我们需要将 enhanced_image_embeds 包装一下
-            from transformers.modeling_outputs import BaseModelOutput
-            encoder_outputs = BaseModelOutput(last_hidden_state=enhanced_image_embeds)
-
-            outputs = self.blip_model(
-                # pixel_values=pixel_values, # 不再需要，因为提供了 encoder_outputs
-                input_ids=generated_ids,
-                attention_mask=current_attention_mask,
-                encoder_outputs=encoder_outputs, # 使用增强的图像特征
-                encoder_attention_mask=image_attention_mask, # 传递编码器的注意力掩码
-                return_dict=True
+        # 临时替换图像特征为增强的特征
+        self.blip_model.vision_model.last_hidden_state = enhanced_image_embeds
+        
+        try:
+            # 使用BLIP的原生生成方法
+            outputs = self.blip_model.generate(
+                # 移除input_ids和attention_mask，让BLIP模型根据图像特征生成
+                **generate_kwargs
             )
-
-            # 获取下一个 token 的 logits
-            next_token_logits = outputs.logits[:, -1, :] # 取最后一个时间步的 logits
-
-            # 贪婪选择下一个 token
-            next_token_id = torch.argmax(next_token_logits, dim=-1).unsqueeze(-1)
-
-            # 拼接到序列
-            generated_ids = torch.cat([generated_ids, next_token_id], dim=-1)
-
-            # 检查是否生成 EOS token
-            if torch.any(next_token_id == eos_token_id):
-                 # 可以选择在这里停止特定样本的生成，但为了简单起见，我们继续直到 max_length
-                 # 或者在这里 break 整个循环（如果所有样本都生成了 EOS）
-                 # if torch.all(torch.any(generated_ids == eos_token_id, dim=1)):
-                 #    break
-                 pass # 简单处理：继续生成直到 max_length
-
-        outputs = generated_ids # 返回生成的 ID 序列
-        
+        finally:
+            # 恢复原始图像特征
+            self.blip_model.vision_model.last_hidden_state = original_last_hidden_state
+            
         return outputs
     
     def generate_caption(
