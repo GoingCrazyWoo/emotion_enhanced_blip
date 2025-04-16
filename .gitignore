@@ -4,3 +4,4 @@ snapshots/
 __pycache__/
 scripts/output/
 annotations_copy/
+scripts/test_val_labels.py

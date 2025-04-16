@@ -104,8 +104,8 @@ def evaluate_model(model, dataloader, device, processor, max_samples=None):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="评估 Emotion Enhanced BLIP 模型")
-    parser.add_argument("--model_path", type=str, default="snapshots/best_model.pth", help="训练好的模型权重路径")
-    parser.add_argument("--annotations_path", type=str, default="annotations/preprocessed_annotations_with_titles.json", help="预处理后的标注文件路径")
+    parser.add_argument("--model_path", type=str, default="scripts/output/caption_model/best_model.pth", help="训练好的模型权重路径")
+    parser.add_argument("--annotations_path", type=str, default="annotations/preprocessed_annotations_0_to_130_validation_with_titles.json", help="预处理后的标注文件路径")
     parser.add_argument("--blip_model_name", type=str, default="Salesforce/blip-image-captioning-base", help="基础 BLIP 模型名称")
     parser.add_argument("--batch_size", type=int, default=16, help="评估时的批次大小")
     parser.add_argument("--max_samples", type=int, default=None, help="最多评估多少个样本 (默认评估全部)")
