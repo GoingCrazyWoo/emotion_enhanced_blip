@@ -523,8 +523,8 @@ class EmotionEnhancedBlipForCaption(nn.Module):
 
             outputs = self.blip_model(
                 # pixel_values=pixel_values, # 不再需要，因为提供了 encoder_outputs
-                decoder_input_ids=generated_ids,
-                decoder_attention_mask=current_attention_mask,
+                input_ids=generated_ids,
+                attention_mask=current_attention_mask,
                 encoder_outputs=encoder_outputs, # 使用增强的图像特征
                 encoder_attention_mask=image_attention_mask, # 传递编码器的注意力掩码
                 return_dict=True
