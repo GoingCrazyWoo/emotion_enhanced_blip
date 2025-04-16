@@ -455,9 +455,6 @@ class EmotionEnhancedBlipForCaption(nn.Module):
             emotion_indices = torch.tensor([[2, 3, -1]]).repeat(batch_size, 1).to(pixel_values.device)
             confidence_values = torch.tensor([[0.8, 0.5, 0.0]]).repeat(batch_size, 1).to(pixel_values.device)
         
-        # 获取情感特征
-        emotion_features = self.get_emotion_representation(emotion_indices, confidence_values)
-        
         # 设置生成参数
         if "max_length" not in generate_kwargs:
             generate_kwargs["max_length"] = 100
@@ -476,46 +473,12 @@ class EmotionEnhancedBlipForCaption(nn.Module):
             
         if "top_p" not in generate_kwargs:
             generate_kwargs["top_p"] = 0.9
-        
-        # 保存原始前向方法
-        original_vision_forward = self.blip_model.vision_model.forward
-        
-        # 定义一个包装的前向方法，注入情感特征
-        def emotion_enhanced_forward(*args, **kwargs):
-            # 调用原始前向方法获取视觉特征
-            vision_outputs = original_vision_forward(*args, **kwargs)
             
-            # 获取图像特征
-            image_embeds = vision_outputs.last_hidden_state
-            
-            # 转换情感特征的尺寸以匹配图像特征
-            expanded_emotion = emotion_features.unsqueeze(1).expand(-1, image_embeds.size(1), -1)
-            
-            # 情感融合门控
-            gate = self.emotion_gate(
-                torch.cat([image_embeds, expanded_emotion], dim=-1)
-            )
-            
-            # 应用情感增强
-            enhanced_image_embeds = image_embeds + gate * expanded_emotion
-            
-            # 用增强的特征替换原始特征
-            vision_outputs.last_hidden_state = enhanced_image_embeds
-            
-            return vision_outputs
-        
-        try:
-            # 替换前向方法为我们的增强版本
-            self.blip_model.vision_model.forward = emotion_enhanced_forward.__get__(self.blip_model.vision_model)
-            
-            # 调用BLIP原生的generate方法
-            outputs = self.blip_model.generate(
-                pixel_values=pixel_values,
-                **generate_kwargs
-            )
-        finally:
-            # 恢复原始前向方法
-            self.blip_model.vision_model.forward = original_vision_forward
+        # 直接调用BLIP原生的generate方法
+        outputs = self.blip_model.generate(
+            pixel_values=pixel_values,
+            **generate_kwargs
+        )
             
         return outputs
     
