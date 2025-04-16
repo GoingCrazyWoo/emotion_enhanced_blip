@@ -455,6 +455,9 @@ class EmotionEnhancedBlipForCaption(nn.Module):
             emotion_indices = torch.tensor([[2, 3, -1]]).repeat(batch_size, 1).to(pixel_values.device)
             confidence_values = torch.tensor([[0.8, 0.5, 0.0]]).repeat(batch_size, 1).to(pixel_values.device)
         
+        # 获取情感特征
+        emotion_features = self.get_emotion_representation(emotion_indices, confidence_values)
+        
         # 设置生成参数
         if "max_length" not in generate_kwargs:
             generate_kwargs["max_length"] = 100
@@ -473,12 +476,47 @@ class EmotionEnhancedBlipForCaption(nn.Module):
             
         if "top_p" not in generate_kwargs:
             generate_kwargs["top_p"] = 0.9
+        
+        # 定义用于情感增强的钩子函数
+        handles = []
+        
+        # 尝试在视觉模型之后注入情感特征
+        def vision_model_hook(module, input, output):
+            # 获取原始特征
+            image_embeds = output.last_hidden_state
             
-        # 直接调用BLIP原生的generate方法
-        outputs = self.blip_model.generate(
-            pixel_values=pixel_values,
-            **generate_kwargs
+            # 转换情感特征的尺寸以匹配图像特征
+            expanded_emotion = emotion_features.unsqueeze(1).expand(-1, image_embeds.size(1), -1)
+            
+            # 情感融合门控
+            gate = self.emotion_gate(
+                torch.cat([image_embeds, expanded_emotion], dim=-1)
+            )
+            
+            # 应用情感增强
+            enhanced_image_embeds = image_embeds + gate * expanded_emotion
+            
+            # 替换输出的特征
+            output.last_hidden_state = enhanced_image_embeds
+            
+            return output
+        
+        # 注册钩子以在前向传播过程中修改特征
+        handle = self.blip_model.vision_model.register_forward_hook(
+            lambda module, input, output: vision_model_hook(module, input, output)
         )
+        handles.append(handle)
+        
+        try:
+            # 调用BLIP原生的generate方法
+            outputs = self.blip_model.generate(
+                pixel_values=pixel_values,
+                **generate_kwargs
+            )
+        finally:
+            # 移除所有钩子，确保不会影响后续的调用
+            for handle in handles:
+                handle.remove()
             
         return outputs
     
