@@ -1,7 +1,14 @@
 .aider*
 snapshots/
 .history/
+
+# Python缓存文件
 __pycache__/
+*/__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+
 scripts/output/
 annotations_copy/
 scripts/test_val_labels.py
