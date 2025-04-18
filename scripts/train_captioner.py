@@ -135,6 +135,7 @@ def train(args):
     # 设置设备
     device = torch.device(args.device)
     logger.info(f"使用设备: {device}")
+    print(f"[DEBUG] Using device: {device}")
     
     # 检查是否可以使用FP16：在CPU上禁用FP16
     if device.type != "cuda":
@@ -190,6 +191,7 @@ def train(args):
         logger.info("模型参数加载完成。")
         
     model.to(device)
+    print("[DEBUG] Model loaded and moved to device.")
     
     # 计算可训练参数
     calculate_trainable_params(model)
@@ -237,6 +239,7 @@ def train(args):
         num_workers=args.num_workers,
         pin_memory=True
     )
+    print("[DEBUG] Train and Val DataLoaders created.")
     
     # 设置优化器和学习率调度器
     optimizer = optim.AdamW(
@@ -291,7 +294,8 @@ def train(args):
         train_batches = 0
 
         train_progress = tqdm(train_loader, desc=f"训练轮次 {epoch+1}")
-        for batch in train_progress:
+        for batch_idx, batch in enumerate(train_progress):
+        # --- DEBUG START: Batch Info ---
             # 将数据移到设备
             pixel_values = batch["pixel_values"].to(device)
             labels = batch["labels"].to(device)
@@ -299,6 +303,13 @@ def train(args):
             # confidence_values = batch["confidence_values"].to(device) # 当前未使用
             attention_mask = batch["attention_mask"].to(device)  # 使用batch中的attention_mask
 
+            print(f"[DEBUG] Batch {batch_idx + 1} - pixel_values shape: {pixel_values.shape}, device: {pixel_values.device}")
+            print(f"[DEBUG] Batch {batch_idx + 1} - labels shape: {labels.shape}, device: {labels.device}")
+            print(f"[DEBUG] Batch {batch_idx + 1} - emotion_indices shape: {emotion_indices.shape}, device: {emotion_indices.device}")
+            # Print multi-hot before moving to device for clarity if needed, otherwise use batch['emotion_labels_multi_hot'].to(device).shape
+            print(f"[DEBUG] Batch {batch_idx + 1} - emotion_labels_multi_hot shape: {batch['emotion_labels_multi_hot'].shape}, device: {batch['emotion_labels_multi_hot'].device}") 
+            print(f"[DEBUG] Batch {batch_idx + 1} - attention_mask shape: {attention_mask.shape}, device: {attention_mask.device}")
+            # --- DEBUG END: Tensor Info ---
             # 清除梯度
             optimizer.zero_grad()
 
@@ -307,6 +318,7 @@ def train(args):
                 # 前向传播
                 outputs = model(
                     pixel_values=pixel_values,
+                print(f"[DEBUG] Batch {batch_idx + 1} - Calling model forward...")
                     emotion_indices=emotion_indices, # 传递真实情感标签用于计算损失
                     # confidence_values=confidence_values, # 当前未使用
                     attention_mask=attention_mask,  # 传入注意力掩码
@@ -316,11 +328,13 @@ def train(args):
                     emotion_labels_multi_hot=batch["emotion_labels_multi_hot"].to(device) # 传递多热情感标签
                 )
 
+                print(f"[DEBUG] Batch {batch_idx + 1} - Model forward completed.")
                 # 获取总损失和子损失 (如果存在)
                 loss = outputs.get("loss") # 总损失
                 caption_loss = outputs.get("caption_loss")
                 emotion_loss = outputs.get("emotion_loss")
 
+                print(f"[DEBUG] Batch {batch_idx + 1} - Loss: {loss.item() if loss is not None else 'N/A'}, Caption Loss: {caption_loss if caption_loss is not None else 'N/A'}, Emotion Loss: {emotion_loss if emotion_loss is not None else 'N/A'}")
             # 只有在存在可训练的总损失时才进行反向传播
             if loss is not None and loss.requires_grad:
                 # 使用梯度缩放器进行反向传播
@@ -333,6 +347,7 @@ def train(args):
                     scaler.step(optimizer)
                     scaler.update()
                 else:
+                    print(f"[DEBUG] Batch {batch_idx + 1} - backward() and step() completed (FP16).")
                     # 常规反向传播
                     loss.backward()
                     # 梯度裁剪
@@ -340,6 +355,7 @@ def train(args):
                     # 更新参数
                     optimizer.step()
 
+                    print(f"[DEBUG] Batch {batch_idx + 1} - backward() and step() completed.")
                 scheduler.step()
 
                 # 更新训练损失统计 (仅当loss有效时)

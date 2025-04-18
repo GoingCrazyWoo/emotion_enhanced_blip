@@ -38,7 +38,7 @@ class NewYorkerCaptionDataset(Dataset):
         limit_samples: Optional[int] = None,
         proxy: Optional[str] = None,
         dataset_cache_dir: Optional[str] = None,
-        local_dataset_path: Optional[str] = "C:\\Users\\86158\\.cache\\huggingface\\datasets\\jmhessel___newyorker_caption_contest\\explanation\\0.0.0\\d81cbab7d0392708d5371d3a4960e69261824db4"
+        local_dataset_path: Optional[str] = None
     ):
         """
         初始化优化的New Yorker漫画描述数据集
@@ -245,6 +245,7 @@ class NewYorkerCaptionDataset(Dataset):
         try:
             sample = self.dataset[idx]
             instance_id = sample.get("instance_id", f"unknown_{idx}")
+            print(f"[DEBUG] Processing sample idx: {idx}, ID: {instance_id}")
             image = self.get_image(idx)
             emotion_indices, confidence_values = self.get_emotions(instance_id)
 
@@ -316,6 +317,7 @@ class NewYorkerCaptionDataset(Dataset):
             return result
         except Exception as e:
             logger.error(f"处理样本失败 (idx={idx}): {str(e)}")
+            print(f"[DEBUG] Error in __getitem__ (idx={idx}): {e}")
             return {
                 "id": f"error_{idx}",
                 "pixel_values": torch.zeros((3, 384, 384)),

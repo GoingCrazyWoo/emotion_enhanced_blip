@@ -408,6 +408,7 @@ class EmotionEnhancedBlipForCaption(nn.Module):
         emotion_loss_weight: float = 0.5, # 情感损失权重
         **kwargs
     ) -> Union[Dict[str, Any], Tuple[torch.Tensor, ...]]:
+        print("[DEBUG] Entering EmotionEnhancedBlipForCaption forward method.")
         """
         前向传播，包含可选的情感分类和标题生成任务。
 
@@ -445,6 +446,7 @@ class EmotionEnhancedBlipForCaption(nn.Module):
 
         # 传递给情感分类头 (emotion_classifier 总是可训练的)
         emotion_logits = self.emotion_classifier(image_embeds) # [batch_size, num_emotions]
+        print(f"[DEBUG] emotion_logits shape: {emotion_logits.shape}, device: {emotion_logits.device}")
 
         # --- 2. 计算情感分类损失 (如果提供了 multi-hot 标签) ---
         emotion_loss = None
@@ -457,6 +459,7 @@ class EmotionEnhancedBlipForCaption(nn.Module):
             emotion_loss_criterion = nn.BCEWithLogitsLoss()
             emotion_loss = emotion_loss_criterion(emotion_logits, emotion_labels_multi_hot)
 
+            print(f"[DEBUG] emotion_loss: {emotion_loss.item() if emotion_loss is not None else 'N/A'}")
             # 防止因数值问题导致 loss 为 NaN 或 inf
             if torch.isnan(emotion_loss) or torch.isinf(emotion_loss):
                 logger.warning(f"Emotion loss is NaN or Inf. Emotion logits: {emotion_logits}, Targets: {emotion_labels_multi_hot}")
@@ -487,6 +490,7 @@ class EmotionEnhancedBlipForCaption(nn.Module):
             # 获取标题生成损失和 logits
             caption_loss = blip_outputs.loss
             caption_logits = blip_outputs.logits
+            print(f"[DEBUG] caption_loss: {caption_loss.item() if caption_loss is not None and torch.is_tensor(caption_loss) else 'N/A'}")
 
             # 如果 BLIP 被冻结，其 loss 理论上为 None 或 0 (不带梯度)
             # 如果 caption_loss 为 None (例如 labels 全是 -100)，将其视为 0
@@ -526,6 +530,7 @@ class EmotionEnhancedBlipForCaption(nn.Module):
              # 使用 torch.stack 确保梯度传播
              total_loss = torch.stack(valid_losses).sum()
         # 如果没有可训练的损失 (例如 BLIP 冻结且未提供 emotion_indices/multi_hot)，total_loss 保持为 None
+        print(f"[DEBUG] total_loss: {total_loss.item() if total_loss is not None else 'N/A'}")
 
         # --- 5. 准备输出 ---
         if not return_dict:
