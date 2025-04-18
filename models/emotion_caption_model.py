@@ -173,6 +173,80 @@ class EmotionEncoder(nn.Module):
         
         return emotion_features
 
+from transformers import LogitsProcessor
+
+class EmotionLogitsProcessor(LogitsProcessor):
+    """在生成过程中根据情感特征调整 logits。"""
+    def __init__(self, model_instance, emotion_features, alpha: float = 0.1):
+        """
+        初始化 Logits Processor。
+
+        参数:
+            model_instance: EmotionEnhancedBlipForCaption 的实例。
+            emotion_features: 计算得到的情感特征 [batch_size, hidden_dim]。
+            alpha: 情感影响因子，控制情感偏差的强度。
+        """
+        if emotion_features is None:
+            raise ValueError("Emotion features cannot be None for EmotionLogitsProcessor.")
+        self.model = model_instance
+        self.emotion_features = emotion_features
+        self.batch_size, self.hidden_dim = emotion_features.shape
+        self.alpha = alpha
+
+        # 预计算情感对 logits 的影响，避免在每步重复计算
+        # [bs, hidden_dim] -> [bs, vocab_size]
+        with torch.no_grad(): # 确保在推理时不计算梯度
+            emotion_logits_bias = self.model.emotion_adapter(self.emotion_features)
+            self.emotion_logits_bias = self.model.emotion_projector(emotion_logits_bias)
+
+    def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor) -> torch.FloatTensor:
+        """
+        调整 logits。
+
+        参数:
+            input_ids: 当前生成的 token IDs [batch_size * num_beams, seq_len]。
+            scores: 当前步的 logits [batch_size * num_beams, vocab_size]。
+
+        返回:
+            modified_scores: 调整后的 logits。
+        """
+        current_batch_size = scores.size(0)
+        vocab_size = scores.size(-1)
+
+        # 检查 emotion_logits_bias 是否与 scores 的设备匹配
+        if self.emotion_logits_bias.device != scores.device:
+            self.emotion_logits_bias = self.emotion_logits_bias.to(scores.device)
+
+        # 需要将 emotion_logits_bias [bs, vocab_size] 扩展以匹配 scores [bs * num_beams, vocab_size]
+        num_beams = current_batch_size // self.batch_size
+        if num_beams <= 0:
+             # 处理 batch_size=1 且 num_beams=1 的情况
+             if current_batch_size == self.batch_size:
+                 num_beams = 1
+             else:
+                 # 如果无法确定 beam 数量，可能出错了，跳过修改
+                 logger.warning(f"Could not determine beam size. Scores shape: {scores.shape}, Emotion bias shape: {self.emotion_logits_bias.shape}")
+                 return scores
+
+        # 扩展情感偏差以匹配 beam search 的维度
+        # [bs, vocab_size] -> [bs * num_beams, vocab_size]
+        expanded_emotion_bias = self.emotion_logits_bias.repeat_interleave(num_beams, dim=0)
+
+        # 确保扩展后的形状匹配
+        if expanded_emotion_bias.shape != scores.shape:
+             logger.warning(f"Shape mismatch after expanding emotion bias. Scores: {scores.shape}, Expanded Bias: {expanded_emotion_bias.shape}. Skipping modification.")
+             return scores
+
+        # --- 融合逻辑: 加性融合 --- 
+        # 使用预设的 alpha 值来控制情感影响强度
+        modified_scores = scores + self.alpha * expanded_emotion_bias
+
+        # 可选：未来可以尝试更复杂的门控融合，但这需要访问 hidden states
+
+        return modified_scores
+
+
+
 class EmotionEnhancedBlipForCaption(nn.Module):
     """情感增强的BLIP描述生成模型"""
     
@@ -200,7 +274,8 @@ class EmotionEnhancedBlipForCaption(nn.Module):
         
         # 保存参数
         self.freeze_blip = freeze_blip
-        
+        self.num_emotions = len(EMOTION_CATEGORIES) # 添加 num_emotions 属性
+
         # 加载BLIP模型
         try:
             logger.info(f"加载BLIP模型: {blip_model_name}")
@@ -225,7 +300,7 @@ class EmotionEnhancedBlipForCaption(nn.Module):
         logger.info(f"BLIP文本隐藏维度: {hidden_dim}")
         
         self.emotion_encoder = EmotionEncoder(
-            num_emotions=len(EMOTION_CATEGORIES),
+            num_emotions=self.num_emotions, # 使用 self.num_emotions
             emotion_dim=emotion_dim,
             max_emotions=max_emotions,
             hidden_dim=hidden_dim,
@@ -249,6 +324,13 @@ class EmotionEnhancedBlipForCaption(nn.Module):
         # 情感投影层 (用于直接处理logits的情况)
         vocab_size = self.blip_model.config.text_config.vocab_size
         self.emotion_projector = nn.Linear(hidden_dim, vocab_size)
+
+        # --- 新增：情感分类头 ---
+        # 使用视觉模型的输出维度 (通常与文本模型相同)
+        vision_hidden_dim = self.blip_model.config.vision_config.hidden_size
+        self.emotion_classifier = nn.Linear(vision_hidden_dim, self.num_emotions)
+        logger.info(f"添加情感分类头: Linear({vision_hidden_dim}, {self.num_emotions})")
+        # --- 结束新增 ---
         
     def get_emotion_representation(
         self,
@@ -261,6 +343,50 @@ class EmotionEnhancedBlipForCaption(nn.Module):
             emotion_indices = emotion_indices.unsqueeze(0)
             confidence_values = confidence_values.unsqueeze(0)
             
+
+    def extract_emotions(
+        self,
+        pixel_values: torch.FloatTensor,
+        top_k: int = 3
+    ) -> Tuple[torch.LongTensor, torch.FloatTensor]:
+        """
+        从图像像素值中动态提取情感类别和置信度。
+
+        参数:
+            pixel_values: 图像的像素值，形状为 [batch_size, 3, height, width]。
+            top_k: 返回置信度最高的前 k 个情感。
+
+        返回:
+            Tuple[torch.LongTensor, torch.FloatTensor]:
+                - predicted_emotion_indices: 预测的情感索引，形状为 [batch_size, top_k]。
+                - predicted_confidence_values: 预测的情感置信度，形状为 [batch_size, top_k]。
+        """
+        batch_size = pixel_values.size(0)
+        device = pixel_values.device
+
+        # 1. 使用 BLIP 视觉编码器提取图像特征
+        # 注意：即使冻结了BLIP，我们仍然可以进行前向传播
+        with torch.no_grad(): # 通常在推理时不计算梯度
+            vision_outputs = self.blip_model.vision_model(pixel_values=pixel_values)
+            # 获取池化后的输出 (通常是 CLS token 的特征)
+            image_embeds = vision_outputs.pooler_output # 形状: [batch_size, vision_hidden_dim]
+
+        # 2. 使用情感分类头预测情感 logits
+        emotion_logits = self.emotion_classifier(image_embeds) # 形状: [batch_size, num_emotions]
+
+        # 3. 应用 Sigmoid 获得每个情感的独立概率 (置信度)
+        emotion_probs = torch.sigmoid(emotion_logits) # 形状: [batch_size, num_emotions]
+
+        # 4. 获取 top-k 情感及其置信度
+        # 对每个样本按置信度降序排序
+        sorted_probs, sorted_indices = torch.sort(emotion_probs, dim=-1, descending=True)
+
+        # 选择前 k 个
+        predicted_confidence_values = sorted_probs[:, :top_k]
+        predicted_emotion_indices = sorted_indices[:, :top_k]
+
+        return predicted_emotion_indices, predicted_confidence_values
+
         # 获取情感特征 [batch_size, hidden_dim]
         emotion_features = self.emotion_encoder(emotion_indices, confidence_values)
         
@@ -272,160 +398,151 @@ class EmotionEnhancedBlipForCaption(nn.Module):
     def forward(
         self,
         pixel_values: torch.FloatTensor,
-        emotion_indices: torch.LongTensor = None,
-        confidence_values: torch.FloatTensor = None,
-        input_ids: torch.LongTensor = None,
-        attention_mask: torch.LongTensor = None,
-        labels: torch.LongTensor = None,
-        return_dict: bool = None,
+        emotion_indices: Optional[torch.LongTensor] = None, # 真实情感标签 (用于计算损失)
+        confidence_values: Optional[torch.FloatTensor] = None, # 置信度（目前未使用）
+        input_ids: Optional[torch.LongTensor] = None, # 标题生成输入
+        attention_mask: Optional[torch.LongTensor] = None, # 标题生成掩码
+        labels: Optional[torch.LongTensor] = None, # 标题生成标签 (用于计算损失)
+        return_dict: Optional[bool] = None,
+        emotion_loss_weight: float = 0.5, # 情感损失权重
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> Union[Dict[str, Any], Tuple[torch.Tensor, ...]]:
         """
-        前向传播
-        
+        前向传播，包含可选的情感分类和标题生成任务。
+
         参数:
-            pixel_values: 图像特征，形状为 [batch_size, 3, height, width]
-            emotion_indices: 情感索引，形状为 [batch_size, max_emotions]
-            confidence_values: 情感置信度，形状为 [batch_size, max_emotions]
-            input_ids: 输入ID，形状为 [batch_size, seq_len]
-            attention_mask: 注意力掩码，形状为 [batch_size, seq_len]
-            labels: 标签，形状为 [batch_size, seq_len]
-            return_dict: 是否返回字典
-            
+            pixel_values: 图像的像素值 [batch_size, 3, height, width]。
+            emotion_indices: 真实情感索引 [batch_size, max_emotions]。如果提供，将计算情感分类损失。
+                           期望包含有效的情感索引（0 到 num_emotions-1）和填充值（例如 -1 或 num_emotions）。
+            confidence_values: 情感置信度 [batch_size, max_emotions] (当前未使用)。
+            input_ids: 标题生成的输入 token IDs [batch_size, seq_len]。
+            attention_mask: 标题生成的注意力掩码 [batch_size, seq_len]。
+            labels: 标题生成的目标 token IDs [batch_size, seq_len]。如果提供，将计算标题生成损失。
+            return_dict: 是否返回字典格式的输出。
+            emotion_loss_weight: 情感分类损失的权重。
+
         返回:
-            outputs: 模型输出
+            包含损失和 logits 的字典 (如果 return_dict=True) 或元组。
+            - loss: 总损失 (加权和)。
+            - caption_loss: 标题生成损失 (如果计算)。
+            - emotion_loss: 情感分类损失 (如果计算)。
+            - logits: 标题生成的 logits (如果计算)。
+            - emotion_logits: 情感分类的 logits。
         """
-        # 处理情感输入
-        if emotion_indices is None or confidence_values is None:
-            # 如果未提供情感，使用默认值（幽默和讽刺）
-            batch_size = pixel_values.size(0)
-            # 注意：使用num_emotions作为padding索引，而不是-1
-            num_emotions = len(EMOTION_CATEGORIES)
-            padding_idx = num_emotions
-            emotion_indices = torch.tensor([[2, 3, padding_idx]]).repeat(batch_size, 1).to(pixel_values.device)
-            confidence_values = torch.tensor([[0.8, 0.5, 0.0]]).repeat(batch_size, 1).to(pixel_values.device)
-        
-        # 获取情感特征
-        emotion_features = self.get_emotion_representation(emotion_indices, confidence_values)
-        
-        # BLIP模型前向传播
-        with torch.set_grad_enabled(not hasattr(self, 'freeze_blip') or not self.freeze_blip):
-            blip_outputs = self.blip_model(
-                pixel_values=pixel_values,
-                input_ids=input_ids,
-                attention_mask=attention_mask,
-                labels=labels,
-                return_dict=True,
-                output_hidden_states=True,  # 请求输出隐藏状态
-                **kwargs
-            )
-        
-        # 将情感特征注入到模型中
-        if labels is not None:
-            # 训练模式：增强BLIP的输出表示
-            # 确保loss是可导的，即使BLIP模型被冻结
-            if hasattr(self, 'freeze_blip') and self.freeze_blip:
-                # 当BLIP被冻结时，我们需要确保loss仍然可导
-                loss = blip_outputs.loss.clone()  # 创建一个可导的副本
-            else:
-                loss = blip_outputs.loss
-            
-            # 获取BLIP最后层的隐藏状态
-            # 根据BLIP模型输出的结构获取正确的隐藏状态
-            if hasattr(blip_outputs, 'decoder_hidden_states') and blip_outputs.decoder_hidden_states is not None:
-                # 如果有decoder_hidden_states属性，使用它
-                last_hidden_state = blip_outputs.decoder_hidden_states[-1]
-                
-                # 将情感特征与BLIP特征融合
-                # 这里简单使用加性融合，可以尝试更复杂的融合方式
-                expanded_emotion = emotion_features.unsqueeze(1).expand(-1, last_hidden_state.size(1), -1)
-                
-                # 计算情感特征的权重
-                gate = self.emotion_gate(
-                    torch.cat([last_hidden_state, expanded_emotion], dim=-1)
+        return_dict = return_dict if return_dict is not None else self.blip_model.config.use_return_dict
+
+        # --- 1. 视觉特征提取和情感分类 ---
+        # 注意：即使 freeze_blip=True，这里也需要计算梯度，因为 emotion_classifier 是可训练的
+        # 我们需要 vision_outputs.pooler_output 来计算 emotion_logits
+        # 如果进行标题生成，BLIP 内部也会计算 vision_outputs，但为了代码清晰，我们先计算一次
+        # 确保 vision_model 的梯度计算根据 freeze_blip 控制
+        with torch.set_grad_enabled(not self.freeze_blip):
+            vision_outputs = self.blip_model.vision_model(pixel_values=pixel_values, return_dict=True)
+        # 池化后的输出需要梯度，以便传递给可训练的 emotion_classifier
+        image_embeds = vision_outputs.pooler_output # [batch_size, vision_hidden_dim]
+
+        # 传递给情感分类头 (emotion_classifier 总是可训练的)
+        emotion_logits = self.emotion_classifier(image_embeds) # [batch_size, num_emotions]
+
+        # --- 2. 计算情感分类损失 (如果提供了真实情感标签) ---
+        emotion_loss = None
+        if emotion_indices is not None:
+            batch_size = emotion_indices.size(0)
+            # 创建 multi-hot 目标向量
+            target_emotions_multi_hot = torch.zeros(batch_size, self.num_emotions, device=pixel_values.device, dtype=torch.float)
+            for i in range(batch_size):
+                # 只选择有效的、非填充的情感索引 (>= 0 且 < num_emotions)
+                valid_emotions = emotion_indices[i][(emotion_indices[i] >= 0) & (emotion_indices[i] < self.num_emotions)]
+                if len(valid_emotions) > 0:
+                    # 使用 scatter_ 将对应位置设为 1.0
+                    target_emotions_multi_hot[i].scatter_(0, valid_emotions.long(), 1.0)
+
+            # 使用 BCEWithLogitsLoss (适用于多标签分类)
+            emotion_loss_criterion = nn.BCEWithLogitsLoss()
+            emotion_loss = emotion_loss_criterion(emotion_logits, target_emotions_multi_hot)
+            # 防止因数值问题导致 loss 为 NaN 或 inf
+            if torch.isnan(emotion_loss) or torch.isinf(emotion_loss):
+                logger.warning(f"Emotion loss is NaN or Inf. Emotion logits: {emotion_logits}, Targets: {target_emotions_multi_hot}")
+                emotion_loss = torch.tensor(0.0, device=pixel_values.device, requires_grad=True) # 设为0并保持梯度
+
+        # --- 3. 计算标题生成损失 (如果提供了标签) ---
+        caption_loss = None
+        caption_logits = None
+        if input_ids is not None and labels is not None:
+            # BLIP 模型前向传播 (标题生成)
+            # 使用 torch.set_grad_enabled 控制 BLIP 部分的梯度计算
+            with torch.set_grad_enabled(not self.freeze_blip):
+                blip_outputs = self.blip_model(
+                    pixel_values=pixel_values, # 传递像素值，BLIP内部处理视觉部分
+                    input_ids=input_ids,
+                    attention_mask=attention_mask,
+                    labels=labels,
+                    return_dict=True,
+                    **kwargs
                 )
-                
-                # 加权融合
-                enhanced_features = last_hidden_state + gate * expanded_emotion
-                
-                # 确保在冻结BLIP的情况下loss保持可导
-                if self.freeze_blip:
-                    # 计算情感增强因子来修改loss
-                    emotion_factor = (gate.mean() + 1.0)  # 确保是正值，用于缩放loss
-                    # 创建一个依赖于emotion_features的可导loss
-                    loss = loss * emotion_factor
-                
-                # 返回增强的输出
-                return {
-                    "loss": loss,
-                    "enhanced_features": enhanced_features,
-                    "emotion_features": emotion_features,
-                    "logits": blip_outputs.logits,
-                    "gateway_value": gate.mean().item()  # 用于监控
-                }
-            elif hasattr(blip_outputs, 'hidden_states') and blip_outputs.hidden_states is not None:
-                # 否则尝试使用hidden_states属性
-                last_hidden_state = blip_outputs.hidden_states[-1]
-                
-                # 将情感特征与BLIP特征融合
-                # 这里简单使用加性融合，可以尝试更复杂的融合方式
-                expanded_emotion = emotion_features.unsqueeze(1).expand(-1, last_hidden_state.size(1), -1)
-                
-                # 计算情感特征的权重
-                gate = self.emotion_gate(
-                    torch.cat([last_hidden_state, expanded_emotion], dim=-1)
-                )
-                
-                # 加权融合
-                enhanced_features = last_hidden_state + gate * expanded_emotion
-                
-                # 确保在冻结BLIP的情况下loss保持可导
-                if self.freeze_blip:
-                    # 计算情感增强因子来修改loss
-                    emotion_factor = (gate.mean() + 1.0)  # 确保是正值，用于缩放loss
-                    # 创建一个依赖于emotion_features的可导loss
-                    loss = loss * emotion_factor
-                
-                # 返回增强的输出
-                return {
-                    "loss": loss,
-                    "enhanced_features": enhanced_features,
-                    "emotion_features": emotion_features,
-                    "logits": blip_outputs.logits,
-                    "gateway_value": gate.mean().item()  # 用于监控
-                }
-            else:
-                # 如果没有隐藏状态，则使用logits进行处理
-                # 创建与logits形状匹配的情感向量
-                batch_size, seq_len, vocab_size = blip_outputs.logits.size()
-                emotion_logits = self.emotion_adapter(emotion_features).unsqueeze(1)
-                emotion_logits = self.emotion_projector(emotion_logits).expand(batch_size, seq_len, vocab_size)
-                
-                # 使用门控机制融合
-                gate_value = self.emotion_gate(
-                    torch.cat([blip_outputs.logits.mean(dim=-1, keepdim=True), 
-                              emotion_logits.mean(dim=-1, keepdim=True)], dim=-1)
-                )
-                
-                # 融合logits
-                fused_logits = blip_outputs.logits * (1 - gate_value) + emotion_logits * gate_value
-                
-                # 确保在冻结BLIP的情况下loss保持可导
-                if self.freeze_blip:
-                    # 计算情感增强因子来修改loss
-                    emotion_factor = (gate_value.mean() + 1.0)  # 确保是正值，用于缩放loss
-                    # 创建一个依赖于emotion_features的可导loss
-                    loss = loss * emotion_factor
-                
-                return {
-                    "loss": loss, 
-                    "logits": fused_logits,
-                    "gateway_value": gate_value.mean().item()  # 用于监控
-                }
-        
+
+            # 获取标题生成损失和 logits
+            caption_loss = blip_outputs.loss
+            caption_logits = blip_outputs.logits
+
+            # 如果 BLIP 被冻结，其 loss 理论上为 None 或 0 (不带梯度)
+            # 如果 caption_loss 为 None (例如 labels 全是 -100)，将其视为 0
+            if caption_loss is None:
+                 caption_loss = torch.tensor(0.0, device=pixel_values.device, requires_grad=False)
+            # 如果冻结，确保 caption_loss 不带梯度
+            elif self.freeze_blip:
+                 caption_loss = caption_loss.detach()
+
+        elif input_ids is not None:
+             # 如果只提供 input_ids 而没有 labels (例如，在推理时调用 forward 获取 logits)
+             with torch.no_grad(): # 推理时不需要梯度
+                 blip_outputs = self.blip_model(
+                     pixel_values=pixel_values,
+                     input_ids=input_ids,
+                     attention_mask=attention_mask,
+                     return_dict=True,
+                     **kwargs
+                 )
+                 caption_logits = blip_outputs.logits
+             caption_loss = torch.tensor(0.0, device=pixel_values.device, requires_grad=False)
         else:
-            # 推理模式：直接返回BLIP输出
-            return blip_outputs
+            # 如果既没有提供 caption labels 也没有 input_ids， caption loss 为 0
+            caption_loss = torch.tensor(0.0, device=pixel_values.device, requires_grad=False)
+
+
+        # --- 4. 合并损失 ---
+        total_loss = None
+        valid_losses = []
+        # 只有需要梯度的损失才加入计算
+        if caption_loss is not None and caption_loss.requires_grad:
+             valid_losses.append(caption_loss) # 标题损失权重为 1
+        if emotion_loss is not None and emotion_loss.requires_grad:
+             valid_losses.append(emotion_loss_weight * emotion_loss) # 情感损失带权重
+
+        if len(valid_losses) > 0:
+             # 使用 torch.stack 确保梯度传播
+             total_loss = torch.stack(valid_losses).sum()
+        # 如果没有可训练的损失 (例如 BLIP 冻结且未提供 emotion_indices)，total_loss 保持为 None
+
+        # --- 5. 准备输出 ---
+        if not return_dict:
+            # 构建元组输出 (参照 Hugging Face 标准)
+            outputs = (caption_logits, emotion_logits) # 添加需要的其他输出
+            # 如果没有计算损失，则不返回损失项
+            return outputs if total_loss is None else ((total_loss,) + outputs)
+
+        # 构建字典输出
+        output_dict = {
+            "loss": total_loss,
+            # detach loss values for logging to avoid memory leaks
+            "caption_loss": caption_loss.detach().item() if caption_loss is not None else None,
+            "emotion_loss": emotion_loss.detach().item() if emotion_loss is not None else None,
+            "logits": caption_logits, # 标题 logits
+            "emotion_logits": emotion_logits, # 情感 logits
+        }
+        # 移除值为 None 的键，除了 loss (loss=None 表示没有可训练的损失)
+        final_output = {k: v for k, v in output_dict.items() if v is not None or k == 'loss'}
+        return final_output
     
     def generate(
         self,
@@ -434,47 +551,107 @@ class EmotionEnhancedBlipForCaption(nn.Module):
         confidence_values: torch.FloatTensor = None,
         input_ids: torch.LongTensor = None,
         attention_mask: torch.LongTensor = None,
+        emotion_alpha: float = 0.1,
+        extract_top_k: int = 3, # 新增：控制动态提取的情感数量
         **generate_kwargs
     ) -> torch.LongTensor:
         """
-        生成描述文本 (移除了情感注入钩子以保持与训练一致)
-        
+        生成带有情感色彩的描述文本。
+
         参数:
-            pixel_values: 图像特征，形状为 [batch_size, 3, height, width]
-            emotion_indices: (可选，不再使用) 情感索引
-            confidence_values: (可选，不再使用) 情感置信度
-            input_ids: (可选) 输入ID，用于条件生成
-            attention_mask: (可选) 注意力掩码
-            generate_kwargs: 传递给 `transformers.generation_utils.GenerationMixin.generate` 的参数
-            
+            pixel_values: 图像特征，形状为 [batch_size, 3, height, width]。
+            emotion_indices: (可选) 提供的情感索引，形状为 [batch_size, num_provided_emotions]。
+                           如果提供，将优先使用此信息。
+            confidence_values: (可选) 提供的情感置信度，形状为 [batch_size, num_provided_emotions]。
+                               需要与 `emotion_indices` 一起提供。
+            input_ids: (可选) 输入ID，用于条件生成。
+            attention_mask: (可选) 注意力掩码。
+            emotion_alpha: (可选) 控制情感 logits 偏置强度的因子，默认为 0.1。
+            extract_top_k: (可选) 当未提供 `emotion_indices` 时，动态提取置信度最高的前 k 个情感，默认为 3。
+            generate_kwargs: 传递给 `transformers.generation_utils.GenerationMixin.generate` 的其他参数。
+
         返回:
-            captions: 生成的描述文本 (token IDs)
+            captions: 生成的描述文本 (token IDs)。
         """
-        # 情感特征不再在此方法中注入
-        
-        # 设置生成参数 (如果未提供)
-        if "max_length" not in generate_kwargs:
-            generate_kwargs["max_length"] = 100
-        if "num_beams" not in generate_kwargs:
-            generate_kwargs["num_beams"] = 5
-        if "min_length" not in generate_kwargs:
-            generate_kwargs["min_length"] = 10
-        if "do_sample" not in generate_kwargs:
-            generate_kwargs["do_sample"] = True # 默认进行采样以增加多样性
-        if "temperature" not in generate_kwargs:
-            generate_kwargs["temperature"] = 0.7
-        if "top_p" not in generate_kwargs:
-            generate_kwargs["top_p"] = 0.9
-            
-        # 直接调用原始 BLIP 模型的 generate 方法
-        # 不再使用钩子注入情感特征
+        logits_processor = generate_kwargs.pop("logits_processor", [])
+        emotion_features = None
+        final_emotion_indices = None
+        final_confidence_values = None
+
+        # 1. 确定要使用的情感信息 (优先使用传入的)
+        if emotion_indices is not None and confidence_values is not None:
+            logger.info("使用提供的情感信息生成描述。")
+            # 确保输入在正确的设备上
+            if pixel_values.device != emotion_indices.device:
+                emotion_indices = emotion_indices.to(pixel_values.device)
+            if pixel_values.device != confidence_values.device:
+                confidence_values = confidence_values.to(pixel_values.device)
+            final_emotion_indices = emotion_indices
+            final_confidence_values = confidence_values
+        elif emotion_indices is None and confidence_values is None:
+            logger.info(f"未提供情感信息，尝试动态提取 top-{extract_top_k} 情感。")
+            try:
+                # 调用动态提取方法
+                predicted_indices, predicted_confidences = self.extract_emotions(
+                    pixel_values=pixel_values,
+                    top_k=extract_top_k
+                )
+                final_emotion_indices = predicted_indices
+                final_confidence_values = predicted_confidences
+                logger.info(f"动态提取的情感索引: {final_emotion_indices.tolist()}")
+                logger.info(f"动态提取的置信度: {final_confidence_values.tolist()}")
+            except Exception as e:
+                logger.error(f"动态提取情感时出错: {e}，将不注入情感。")
+                # 保持 final_emotion_indices 和 final_confidence_values 为 None
+        else:
+            # 处理只提供了一个情感输入的情况
+            logger.warning("emotion_indices 和 confidence_values 必须同时提供或同时不提供。将不注入情感特征。")
+            # 保持 final_emotion_indices 和 final_confidence_values 为 None
+
+        # 2. 如果获得了有效的情感信息，则计算情感表示
+        if final_emotion_indices is not None and final_confidence_values is not None:
+            try:
+                emotion_features = self.get_emotion_representation(
+                    final_emotion_indices,
+                    final_confidence_values
+                )
+            except Exception as e:
+                logger.error(f"计算情感表示时出错: {e}，将不注入情感。")
+                emotion_features = None # 确保出错时 emotion_features 为 None
+
+        # 3. 如果获得情感特征，则创建并添加 Logits Processor
+        if emotion_features is not None:
+            try:
+                emotion_processor = EmotionLogitsProcessor(
+                    model_instance=self,
+                    emotion_features=emotion_features,
+                    alpha=emotion_alpha # 使用传入的 alpha 值
+                )
+                logits_processor.append(emotion_processor)
+                logger.info(f"已添加 EmotionLogitsProcessor，alpha={emotion_alpha}")
+            except ValueError as e:
+                 logger.error(f"创建 EmotionLogitsProcessor 失败: {e}，将不注入情感。")
+            except Exception as e:
+                logger.error(f"创建或添加 EmotionLogitsProcessor 时发生未知错误: {e}，将不注入情感。")
+
+
+        # 4. 设置默认生成参数 (如果未提供)
+        generate_kwargs.setdefault("max_length", 100)
+        generate_kwargs.setdefault("num_beams", 5)
+        generate_kwargs.setdefault("min_length", 10)
+        generate_kwargs.setdefault("do_sample", True) # 默认采样
+        generate_kwargs.setdefault("temperature", 0.7)
+        generate_kwargs.setdefault("top_p", 0.9)
+
+        # 5. 调用基础模型的 generate 方法，传入修改后的 logits_processor
         outputs = self.blip_model.generate(
             pixel_values=pixel_values,
             input_ids=input_ids,
             attention_mask=attention_mask,
+            logits_processor=logits_processor, # 传递包含情感处理器的列表
             **generate_kwargs
         )
-        
+
         return outputs
     
     def generate_caption(

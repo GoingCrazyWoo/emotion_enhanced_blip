@@ -241,12 +241,13 @@ def train(args):
         "epochs": args.epochs,
         "max_length": args.max_length,
         "freeze_blip": args.freeze_blip,
+        "emotion_loss_weight": args.emotion_loss_weight, # 添加情感损失权重
         "train_samples": len(train_dataset),
         "val_samples": len(val_dataset),
         "annotations_path": args.annotations_path,
         "fp16": args.fp16  # 添加半精度设置到配置
     }
-    
+
     with open(os.path.join(args.output_dir, "config.json"), "w", encoding="utf-8") as f:
         json.dump(config, f, ensure_ascii=False, indent=2)
     
@@ -260,76 +261,100 @@ def train(args):
         # 训练阶段
         model.train()
         train_loss = 0.0
+        train_caption_loss = 0.0
+        train_emotion_loss = 0.0
         train_batches = 0
-        
+
         train_progress = tqdm(train_loader, desc=f"训练轮次 {epoch+1}")
         for batch in train_progress:
             # 将数据移到设备
             pixel_values = batch["pixel_values"].to(device)
             labels = batch["labels"].to(device)
             emotion_indices = batch["emotion_indices"].to(device)
-            confidence_values = batch["confidence_values"].to(device)
+            # confidence_values = batch["confidence_values"].to(device) # 当前未使用
             attention_mask = batch["attention_mask"].to(device)  # 使用batch中的attention_mask
-            
+
             # 清除梯度
             optimizer.zero_grad()
-            
+
             # 使用混合精度训练
             with autocast(enabled=args.fp16):
                 # 前向传播
                 outputs = model(
                     pixel_values=pixel_values,
-                    emotion_indices=emotion_indices,
-                    confidence_values=confidence_values,
+                    emotion_indices=emotion_indices, # 传递真实情感标签用于计算损失
+                    # confidence_values=confidence_values, # 当前未使用
                     attention_mask=attention_mask,  # 传入注意力掩码
-                    input_ids=labels,
-                    labels=labels
-                    #注意transformers库会自动处理labels和input_ids的偏移问题 无需手动处理 直接将input_ids设置为labels即可
+                    input_ids=labels, # input_ids 用于生成
+                    labels=labels,    # labels 用于计算 caption loss
+                    emotion_loss_weight=args.emotion_loss_weight # 传递损失权重
                 )
-                
-                loss = outputs["loss"]
-            
-            # 使用梯度缩放器进行反向传播
-            if args.fp16:
-                scaler.scale(loss).backward()
-                # 梯度裁剪
-                scaler.unscale_(optimizer)
-                torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
-                # 更新参数
-                scaler.step(optimizer)
-                scaler.update()
+
+                # 获取总损失和子损失 (如果存在)
+                loss = outputs.get("loss") # 总损失
+                caption_loss = outputs.get("caption_loss")
+                emotion_loss = outputs.get("emotion_loss")
+
+            # 只有在存在可训练的总损失时才进行反向传播
+            if loss is not None and loss.requires_grad:
+                # 使用梯度缩放器进行反向传播
+                if args.fp16:
+                    scaler.scale(loss).backward()
+                    # 梯度裁剪
+                    scaler.unscale_(optimizer)
+                    torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
+                    # 更新参数
+                    scaler.step(optimizer)
+                    scaler.update()
+                else:
+                    # 常规反向传播
+                    loss.backward()
+                    # 梯度裁剪
+                    torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
+                    # 更新参数
+                    optimizer.step()
+
+                scheduler.step()
+
+                # 更新训练损失统计 (仅当loss有效时)
+                train_loss += loss.item()
+                if caption_loss is not None:
+                    train_caption_loss += caption_loss # caption_loss 已经是 item()
+                if emotion_loss is not None:
+                    train_emotion_loss += emotion_loss # emotion_loss 已经是 item()
+                train_batches += 1
+
+                # 更新进度条显示子损失
+                log_dict = {"loss": f"{loss.item():.4f}"}
+                if caption_loss is not None:
+                    log_dict["cap_loss"] = f"{caption_loss:.4f}"
+                if emotion_loss is not None:
+                    log_dict["emo_loss"] = f"{emotion_loss:.4f}"
+                train_progress.set_postfix(log_dict)
             else:
-                # 常规反向传播
-                loss.backward()
-                # 梯度裁剪
-                torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
-                # 更新参数
-                optimizer.step()
-            
-            scheduler.step()
-            
-            # 更新训练损失
-            train_loss += loss.item()
-            train_batches += 1
-            
-            # 更新进度条
-            train_progress.set_postfix({"loss": loss.item()})
-            
+                 # 如果 loss 为 None (例如冻结BLIP且没有情感标签)，跳过优化步骤
+                 logger.debug("跳过优化步骤，因为没有可训练的损失。")
+
+
             # 定期保存检查点
-            if args.save_steps > 0 and (train_batches % args.save_steps == 0):
+            if args.save_steps > 0 and train_batches > 0 and (train_batches % args.save_steps == 0):
                 checkpoint_path = os.path.join(args.output_dir, f"checkpoint_e{epoch+1}_b{train_batches}.pth")
                 torch.save(model.state_dict(), checkpoint_path)
                 logger.info(f"保存检查点到 {checkpoint_path}")
         
-        # 计算平均训练损失
-        avg_train_loss = train_loss / train_batches
-        logger.info(f"训练损失: {avg_train_loss:.4f}")
-        
+        # 计算平均训练损失 (确保 train_batches > 0)
+        avg_train_loss = train_loss / train_batches if train_batches > 0 else 0.0
+        avg_train_caption_loss = train_caption_loss / train_batches if train_batches > 0 else 0.0
+        avg_train_emotion_loss = train_emotion_loss / train_batches if train_batches > 0 else 0.0
+        logger.info(f"平均训练损失: {avg_train_loss:.4f} (标题: {avg_train_caption_loss:.4f}, 情感: {avg_train_emotion_loss:.4f})")
+
         # 验证阶段
         model.eval()
         val_loss = 0.0
+        val_caption_loss = 0.0
+        val_emotion_loss = 0.0
         val_batches = 0
-        
+
         with torch.no_grad():
             val_progress = tqdm(val_loader, desc=f"验证轮次 {epoch+1}")
             for batch in val_progress:
@@ -337,43 +362,62 @@ def train(args):
                 pixel_values = batch["pixel_values"].to(device)
                 labels = batch["labels"].to(device)
                 emotion_indices = batch["emotion_indices"].to(device)
-                confidence_values = batch["confidence_values"].to(device)
+                # confidence_values = batch["confidence_values"].to(device) # 当前未使用
                 attention_mask = batch["attention_mask"].to(device)  # 使用batch中的attention_mask
-                
+
                 # 验证时也使用混合精度，但不需要梯度
                 with autocast(enabled=args.fp16):
                     # 前向传播
                     outputs = model(
                         pixel_values=pixel_values,
                         emotion_indices=emotion_indices,
-                        confidence_values=confidence_values,
+                        # confidence_values=confidence_values,
                         attention_mask=attention_mask,  # 传入注意力掩码
                         labels=labels,
-                        input_ids=labels #需要传入标签和输入 transformers框架会自动处理并计算损失
+                        input_ids=labels, # 验证时也需要计算损失
+                        emotion_loss_weight=args.emotion_loss_weight # 传递权重
                     )
-                    
-                    loss = outputs["loss"]
-                
-                # 更新验证损失
-                val_loss += loss.item()
-                val_batches += 1
-                
-                # 更新进度条
-                val_progress.set_postfix({"loss": loss.item()})
-        
-        # 计算平均验证损失
-        avg_val_loss = val_loss / val_batches
-        logger.info(f"验证损失: {avg_val_loss:.4f}")
-        
+
+                    loss = outputs.get("loss")
+                    caption_loss = outputs.get("caption_loss")
+                    emotion_loss = outputs.get("emotion_loss")
+
+                # 更新验证损失 (仅当 loss 有效时)
+                if loss is not None:
+                    val_loss += loss.item()
+                    if caption_loss is not None:
+                        val_caption_loss += caption_loss # item()
+                    if emotion_loss is not None:
+                        val_emotion_loss += emotion_loss # item()
+                    val_batches += 1
+
+                    # 更新进度条
+                    log_dict = {"loss": f"{loss.item():.4f}"}
+                    if caption_loss is not None:
+                        log_dict["cap_loss"] = f"{caption_loss:.4f}"
+                    if emotion_loss is not None:
+                        log_dict["emo_loss"] = f"{emotion_loss:.4f}"
+                    val_progress.set_postfix(log_dict)
+
+        # 计算平均验证损失 (确保 val_batches > 0)
+        avg_val_loss = val_loss / val_batches if val_batches > 0 else 0.0
+        avg_val_caption_loss = val_caption_loss / val_batches if val_batches > 0 else 0.0
+        avg_val_emotion_loss = val_emotion_loss / val_batches if val_batches > 0 else 0.0
+        logger.info(f"平均验证损失: {avg_val_loss:.4f} (标题: {avg_val_caption_loss:.4f}, 情感: {avg_val_emotion_loss:.4f})")
+
         # 记录训练历史
         epoch_history = {
             "epoch": epoch + 1,
             "train_loss": avg_train_loss,
+            "train_caption_loss": avg_train_caption_loss,
+            "train_emotion_loss": avg_train_emotion_loss,
             "val_loss": avg_val_loss,
+            "val_caption_loss": avg_val_caption_loss,
+            "val_emotion_loss": avg_val_emotion_loss,
             "learning_rate": scheduler.get_last_lr()[0]
         }
         training_history.append(epoch_history)
-        
+
         # 保存训练历史
         with open(os.path.join(args.output_dir, "training_history.json"), "w", encoding="utf-8") as f:
             json.dump(training_history, f, ensure_ascii=False, indent=2)
@@ -420,8 +464,9 @@ def main():
     parser.add_argument("--num_workers", type=int, default=4, help="数据加载器的工作线程数")
     parser.add_argument("--save_steps", type=int, default=0, help="多少步保存一次检查点，0表示不保存")
     parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu", help="训练设备")
-    parser.add_argument("--fp16", action="store_true", default=False, help="是否使用半精度(FP16)训练")  #默认采用半精度
-    
+    parser.add_argument("--fp16", action="store_true", default=False, help="是否使用半精度(FP16)训练")
+    parser.add_argument("--emotion_loss_weight", type=float, default=0.5, help="情感分类损失的权重") # 新增参数
+
     # 其他参数
     parser.add_argument("--proxy", type=str, default="http://127.0.0.1:7890", help="HTTP代理URL")
     parser.add_argument("--no-proxy", action="store_true", help="是否禁用代理")

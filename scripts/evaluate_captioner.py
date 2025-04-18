@@ -90,8 +90,8 @@ def evaluate_model(model, dataloader, device, processor, max_samples=None, outpu
             # 调整生成参数以生成标题
             generated_ids = model.generate(
                 pixel_values=pixel_values,
-                emotion_indices=emotion_indices,
-                confidence_values=confidence_values,
+                # emotion_indices=emotion_indices, # 移除情感输入，强制动态提取
+                # confidence_values=confidence_values, # 移除置信度输入
                 max_length=max_title_length, # 使用参数控制最大标题长度
                 num_beams=4, # 可以尝试使用 beam search
                 early_stopping=True # 提前停止生成
@@ -228,29 +228,29 @@ def evaluate_model(model, dataloader, device, processor, max_samples=None, outpu
     print(f"精确匹配率 (Exact Match): {exact_match_score:.4f}")
     print("---------------------------\n")
 
-    # --- 情感评估 (可选，基于生成的标题) ---
-    # 注意：这个评估现在是基于生成的标题，而不是描述。
-    # 如果情感主要体现在描述中，这个指标的意义可能会降低。
-    print("--- 情感评估 (基于生成的标题) ---")
-    emotion_match_count = 0
-    total_samples_with_emotion = 0
-    for i, pred_title in enumerate(all_preds): # 使用生成的标题进行评估
-        true_emotion_indices = [idx for idx in all_emotion_labels[i] if idx != -1]
-        if true_emotion_indices:
-            total_samples_with_emotion += 1
-            true_emotion_names = [EMOTION_CATEGORIES[idx] for idx in true_emotion_indices if idx < len(EMOTION_CATEGORIES)]
-            matched = False
-            for emotion_name in true_emotion_names:
-                # 检查情感名称是否在 *生成的标题* 中
-                if emotion_name.lower() in pred_title.lower():
-                    matched = True
-                    break
-            if matched:
-                emotion_match_count += 1
-
-    emotion_accuracy = (emotion_match_count / total_samples_with_emotion) if total_samples_with_emotion > 0 else 0
-    print(f"情感匹配准确率 (基于标题): {emotion_accuracy:.4f} ({emotion_match_count}/{total_samples_with_emotion})")
-    print("---------------------------------\n")
+    # --- 情感评估 (基于生成的标题) ---
+    # 注意：由于动态情感提取的结果目前不易直接获取用于评估，
+    # 此部分已被注释掉。
+    # print("--- 情感评估 (基于生成的标题) ---")
+    # emotion_match_count = 0
+    # total_samples_with_emotion = 0
+    # for i, pred_title in enumerate(all_preds): # 使用生成的标题进行评估
+    #     true_emotion_indices = [idx for idx in all_emotion_labels[i] if idx != -1]
+    #     if true_emotion_indices:
+    #         total_samples_with_emotion += 1
+    #         true_emotion_names = [EMOTION_CATEGORIES[idx] for idx in true_emotion_indices if idx < len(EMOTION_CATEGORIES)]
+    #         matched = False
+    #         for emotion_name in true_emotion_names:
+    #             # 检查情感名称是否在 *生成的标题* 中
+    #             if emotion_name.lower() in pred_title.lower():
+    #                 matched = True
+    #                 break
+    #         if matched:
+    #             emotion_match_count += 1
+    #
+    # emotion_accuracy = (emotion_match_count / total_samples_with_emotion) if total_samples_with_emotion > 0 else 0
+    # print(f"情感匹配准确率 (基于标题): {emotion_accuracy:.4f} ({emotion_match_count}/{total_samples_with_emotion})")
+    # print("---------------------------------\n")
 
     # 打印部分样例
     num_samples_to_print = min(5, len(all_preds))
@@ -274,13 +274,13 @@ def evaluate_model(model, dataloader, device, processor, max_samples=None, outpu
                  **pycoco_eval_results, # BLEU, ROUGE etc. from pycocoevalcap
                 "ExactMatch": exact_match_score # 添加精确匹配
             },
-            "emotion_accuracy_on_title": emotion_accuracy, # 更新情感指标名称
-            "emotion_match_count_on_title": emotion_match_count,
-            "total_samples_with_emotion": total_samples_with_emotion,
+            # "emotion_accuracy_on_title": emotion_accuracy, # 已注释掉
+            # "emotion_match_count_on_title": emotion_match_count, # 已注释掉
+            # "total_samples_with_emotion": total_samples_with_emotion, # 已注释掉
             "generated_titles": all_preds, # 更新字段名称
             "image_ids": all_image_ids,
             "ground_truth_titles": all_ground_truth_titles, # 更新字段名称
-            "emotion_labels_indices": all_emotion_labels
+            "emotion_labels_indices": all_emotion_labels # 保留原始标签以供参考
         }
         try:
             output_dir = os.path.dirname(output_path)
