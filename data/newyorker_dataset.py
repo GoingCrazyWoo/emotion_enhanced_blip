@@ -312,8 +312,10 @@ class NewYorkerCaptionDataset(Dataset):
                     logger.error(f"处理文本失败 (idx={idx}): {e}")
                     # 如果处理失败，添加一个空的或填充的标签以避免后续错误
                     result["labels"] = torch.full((self.max_target_length,), fill_value=-100, dtype=torch.long)
-            # else: # 如果没有目标文本，也需要提供一个labels字段给collate_fn
-            #     result["labels"] = torch.full((self.max_target_length,), fill_value=-100, dtype=torch.long) # 移除这部分，collate_fn会处理labels不存在的情况
+            else: # 如果没有目标文本，也需要提供一个labels字段给collate_fn
+                # 添加空的标签值，确保所有样本都有labels字段
+                result["labels"] = torch.full((self.max_target_length,), fill_value=-100, dtype=torch.long)
+                
             return result
         except Exception as e:
             logger.error(f"处理样本失败 (idx={idx}): {str(e)}")
@@ -325,6 +327,7 @@ class NewYorkerCaptionDataset(Dataset):
                 "confidence_values": [],
                 "ground_truth_title": "", # 确保返回空字符串
                 "reference_description": "", # 确保返回空字符串
+                "labels": torch.full((self.max_target_length,), fill_value=-100, dtype=torch.long) # 添加空标签
             }
 
 
@@ -353,9 +356,11 @@ def optimized_collate_fn(batch):
     # 保留标签处理逻辑，以防训练时需要
     has_labels = all("labels" in item for item in batch)
     labels = None
+    attention_mask = None
     if has_labels:
         max_label_len = max(item["labels"].size(0) for item in batch if "labels" in item)
         labels = torch.full((len(batch), max_label_len), fill_value=-100, dtype=torch.long)
+        attention_mask = torch.zeros((len(batch), max_label_len), dtype=torch.long)
 
     ids = []
     ground_truth_titles_list = [] # 用于收集真实标题
@@ -370,6 +375,8 @@ def optimized_collate_fn(batch):
         if has_labels and "labels" in item:
             seq_len = item["labels"].size(0)
             labels[i, :seq_len] = item["labels"]
+            # 创建注意力掩码 - 非填充位置设为1
+            attention_mask[i, :seq_len] = (item["labels"] != -100).long()
 
         ids.append(item.get("id", f"unknown_{i}"))
         ground_truth_titles_list.append(item.get("ground_truth_title", "")) # 收集真实标题
@@ -386,5 +393,6 @@ def optimized_collate_fn(batch):
 
     if has_labels:
         result["labels"] = labels
+        result["attention_mask"] = attention_mask
 
     return result

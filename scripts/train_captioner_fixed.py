@@ -333,16 +333,25 @@ def train(args):
             attention_mask = batch.get("attention_mask", None)
             labels = batch.get("labels", None)
             
-            # 如果有标签，移动到设备
-            if input_ids is not None and not args.emotion_only:
+            # 如果有标签且不是仅情感模式，移动到设备
+            if not args.emotion_only and labels is not None:
                 input_ids = input_ids.to(device)
                 attention_mask = attention_mask.to(device)
                 labels = labels.to(device)
+                # 记录标签存在
+                if batch_idx == 0 and epoch == 0:
+                    logger.info("使用标题生成训练模式")
             else:
                 # 如果只训练情感，或者没有标签，设为None
                 input_ids = None
                 attention_mask = None
                 labels = None
+                # 记录仅使用情感训练
+                if batch_idx == 0 and epoch == 0:
+                    if args.emotion_only:
+                        logger.info("仅使用情感训练模式 (通过参数设置)")
+                    else:
+                        logger.info("仅使用情感训练模式 (未找到标题数据)")
 
             # 减少调试信息，只在首批次显示
             if batch_idx == 0 and epoch == 0:
@@ -520,8 +529,8 @@ def train(args):
                 attention_mask = batch.get("attention_mask", None)
                 labels = batch.get("labels", None)
                 
-                # 如果有标签且不是只使用情感，移动到设备
-                if input_ids is not None and not args.emotion_only:
+                # 如果有标签且不是仅情感模式，移动到设备
+                if not args.emotion_only and labels is not None:
                     input_ids = input_ids.to(device)
                     attention_mask = attention_mask.to(device)
                     labels = labels.to(device)
@@ -654,7 +663,7 @@ def main():
     parser.add_argument("--load_model_path", type=str, default=None, help="从本地加载模型参数的路径 (.pth 文件)")
     parser.add_argument("--blip_model", type=str, default="Salesforce/blip-image-captioning-base", help="BLIP模型名称")
     parser.add_argument("--max_length", type=int, default=100, help="文本最大长度")
-    parser.add_argument("--freeze_blip", action="store_true", default=True, help="是否冻结BLIP基础模型")
+    parser.add_argument("--freeze_blip", default=True, action="store_true", help="是否冻结BLIP基础模型")
     parser.add_argument("--no-freeze-blip", action="store_true", help="是否不冻结BLIP基础模型")
     
     # 训练参数
@@ -668,7 +677,8 @@ def main():
     parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu", help="训练设备")
     parser.add_argument("--fp16", action="store_true", default=False, help="是否使用半精度(FP16)训练")
     parser.add_argument("--emotion_loss_weight", type=float, default=0.5, help="情感分类损失的权重")
-    parser.add_argument("--emotion_only", action="store_true", default=False, help="是否仅使用情感分类损失")
+    parser.add_argument("--emotion_only", action="store_true", default=False, help="是否仅使用情感分类损失（忽略标题生成损失）")
+    parser.add_argument("--no-emotion-only", action="store_true", help="强制使用标题生成损失进行训练")
 
     # 其他参数
     parser.add_argument("--proxy", type=str, default=None, help="HTTP代理URL")
@@ -685,6 +695,11 @@ def main():
     if getattr(args, 'no_freeze_blip', False):
         args.freeze_blip = False
         logger.info("已禁用BLIP模型冻结，所有参数将参与训练")
+    
+    # 如果指定了不仅使用情感训练，则关闭emotion_only
+    if getattr(args, 'no_emotion_only', False):
+        args.emotion_only = False
+        logger.info("已禁用仅情感训练模式，将同时使用标题生成损失")
     
     # 检查CUDA是否可用，如果不可用则强制使用CPU
     if args.device == "cuda" and not torch.cuda.is_available():
