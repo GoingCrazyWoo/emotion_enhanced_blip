@@ -331,7 +331,9 @@ def optimized_collate_fn(batch):
             "pixel_values": torch.zeros((1, 3, 384, 384)),
             "labels": torch.zeros((1, 10), dtype=torch.long),
             "emotion_indices": torch.zeros((1, 1), dtype=torch.long),
-            "confidence_values": torch.zeros((1, 1), dtype=torch.float)
+            "confidence_values": torch.zeros((1, 1), dtype=torch.float),
+            "ids": ["empty_batch"], # 添加默认 ID
+            "reference_captions": [[]] # 添加默认参考描述
         }
     
     # 提取所有批次的项目
@@ -352,6 +354,7 @@ def optimized_collate_fn(batch):
         labels = torch.full((len(batch), max_label_len), fill_value=-100, dtype=torch.long)
     
     ids = []
+    reference_captions_list = [] # 新增：用于收集参考描述
     
     # 填充批次中的每个项目
     for i, item in enumerate(batch):
@@ -369,15 +372,22 @@ def optimized_collate_fn(batch):
         # 收集ID
         if "id" in item:
             ids.append(item["id"])
+            
+        # 新增：收集参考描述
+        if "reference_captions" in item:
+            reference_captions_list.append(item["reference_captions"])
+        else:
+            reference_captions_list.append([]) # 如果某个样本没有，添加空列表以保持对齐
     
     result = {
         "pixel_values": pixel_values,
         "emotion_indices": emotion_indices,
         "confidence_values": confidence_values,
-        "ids": ids
+        "ids": ids,
+        "reference_captions": reference_captions_list # 新增：将收集到的列表添加到结果字典
     }
     
     if has_labels:
         result["labels"] = labels
         
-    return result 
+    return result
