@@ -46,7 +46,7 @@ def load_model(model_path, device, blip_model_name, proxy=None):
     model.eval()
     return model
 
-def calculate_exact_match(predictions: List[str], references: List[str]) -> float:
+def calculate_exact_match(predictions: list[str], references: list[str]) -> float:
     """计算精确匹配率"""
     if len(predictions) != len(references):
         print("警告：预测和参考的数量不匹配，无法计算精确匹配率。")
