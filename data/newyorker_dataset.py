@@ -292,20 +292,27 @@ class NewYorkerCaptionDataset(Dataset):
 
             # 处理目标文本（用于训练，评估时可能不需要）
             # 决定使用标题还是描述作为训练目标，这里我们假设评估时不需要labels
-            # target_text = ground_truth_title # 或者 reference_description
-            # if target_text:
-            #     try:
-            #         target_encoding = self.processor(
-            #             text=target_text,
-            #             padding="max_length",
-            #             truncation=True,
-            #             max_length=self.max_target_length,
-            #             return_tensors="pt"
-            #         )
-            #         result["labels"] = target_encoding.input_ids.squeeze()
-            #     except Exception as e:
-            #         logger.error(f"处理文本失败 (idx={idx}): {e}")
-
+            target_text = ground_truth_title # 使用标题作为训练目标
+            if target_text:
+                try:
+                    target_encoding = self.processor(
+                        text=target_text,
+                        padding="max_length",
+                        truncation=True,
+                        max_length=self.max_target_length,
+                        return_tensors="pt"
+                    )
+                    # 确保 labels 是一个张量
+                    labels = target_encoding.input_ids.squeeze()
+                    if labels.dim() == 0: # 如果squeeze后变成0维标量
+                        labels = labels.unsqueeze(0) # 恢复为1维张量
+                    result["labels"] = labels
+                except Exception as e:
+                    logger.error(f"处理文本失败 (idx={idx}): {e}")
+                    # 如果处理失败，添加一个空的或填充的标签以避免后续错误
+                    result["labels"] = torch.full((self.max_target_length,), fill_value=-100, dtype=torch.long)
+            # else: # 如果没有目标文本，也需要提供一个labels字段给collate_fn
+            #     result["labels"] = torch.full((self.max_target_length,), fill_value=-100, dtype=torch.long) # 移除这部分，collate_fn会处理labels不存在的情况
             return result
         except Exception as e:
             logger.error(f"处理样本失败 (idx={idx}): {str(e)}")
