@@ -9,7 +9,7 @@ from torchvision import transforms
 # 导入 MultiheadDiffAttn 和 RotaryEmbedding
 from .multihead_diffattn import MultiheadDiffAttn
 from .rotary import RotaryEmbedding
-from ..utils.emotion_utils import EMOTION_CATEGORIES
+from emotion_enhanced_blip.utils.emotion_utils import EMOTION_CATEGORIES # 使用绝对导入
 
 logger = logging.getLogger(__name__)
 
