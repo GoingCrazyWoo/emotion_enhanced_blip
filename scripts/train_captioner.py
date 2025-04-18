@@ -151,7 +151,8 @@ def train(args):
         model = EmotionEnhancedBlipForCaption(
             blip_model_name=args.blip_model,
             freeze_blip=args.freeze_blip,
-            proxy=args.proxy
+            proxy=args.proxy,
+            load_base_model_only=args.load_base_model_only # 添加参数
         )
         print("[DEBUG] Model instance created.")
     except Exception as e:
@@ -162,7 +163,8 @@ def train(args):
             model = EmotionEnhancedBlipForCaption(
                 blip_model_name=args.blip_model,
                 freeze_blip=True,  # 强制冻结BLIP
-                proxy=None  # 禁用代理
+                proxy=None,  # 禁用代理
+                load_base_model_only=args.load_base_model_only # 添加参数
             )
             print("[DEBUG] Model instance created with conservative settings.")
         except Exception as e:

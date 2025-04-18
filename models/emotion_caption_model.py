@@ -257,7 +257,8 @@ class EmotionEnhancedBlipForCaption(nn.Module):
         max_emotions: int = 3,
         emotion_dim: int = 32,
         freeze_blip: bool = True,
-        proxy: Optional[str] = None
+        proxy: Optional[str] = None,
+        load_base_model_only: bool = False # 添加新参数
     ):
         """
         初始化情感增强的BLIP描述生成模型
@@ -275,6 +276,7 @@ class EmotionEnhancedBlipForCaption(nn.Module):
         # 保存参数
         self.freeze_blip = freeze_blip
         self.num_emotions = len(EMOTION_CATEGORIES) # 添加 num_emotions 属性
+        self.load_base_model_only = load_base_model_only # 保存参数
         
         # 加载BLIP处理器和模型，添加错误处理
         try:
@@ -315,47 +317,60 @@ class EmotionEnhancedBlipForCaption(nn.Module):
                 param.requires_grad = False
             print("[DEBUG] BLIP parameters frozen.")
                 
-        # 情感编码器
+        # 获取必要的配置信息
         hidden_dim = self.blip.config.text_config.hidden_size
-        logger.info(f"BLIP文本隐藏维度: {hidden_dim}")
-        
-        self.emotion_encoder = EmotionEncoder(
-            num_emotions=len(EMOTION_CATEGORIES), # 使用 self.num_emotions
-            emotion_dim=emotion_dim,
-            max_emotions=max_emotions,
-            hidden_dim=hidden_dim,
-            dropout=dropout
-        )
-        print("[DEBUG] EmotionEncoder initialized.")
-        
-        # 情感特征适配层
-        self.emotion_adapter = nn.Sequential(
-            nn.Linear(hidden_dim, hidden_dim),
-            nn.LayerNorm(hidden_dim),
-            nn.GELU(),
-            nn.Dropout(dropout)
-        )
-        print("[DEBUG] EmotionAdapter initialized.")
-        
-        # 情感控制门
-        self.emotion_gate = nn.Sequential(
-            nn.Linear(hidden_dim * 2, 1),
-            nn.Sigmoid()
-        )
-        print("[DEBUG] EmotionGate initialized.")
-        
-        # 情感投影层 (用于直接处理logits的情况)
-        vocab_size = self.blip.config.text_config.vocab_size
-        self.emotion_projector = nn.Linear(hidden_dim, vocab_size)
-        print("[DEBUG] EmotionProjector initialized.")
-
-        # --- 新增：情感分类头 ---
-        # 使用视觉模型的输出维度 (通常与文本模型相同)
         vision_hidden_dim = self.blip.config.vision_config.hidden_size
-        self.emotion_classifier = nn.Linear(vision_hidden_dim, len(EMOTION_CATEGORIES))
-        logger.info(f"添加情感分类头: Linear({vision_hidden_dim}, {len(EMOTION_CATEGORIES)})")
-        print("[DEBUG] EmotionClassifier initialized.")
-        # --- 结束新增 ---
+        vocab_size = self.blip.config.text_config.vocab_size
+        logger.info(f"BLIP文本隐藏维度: {hidden_dim}")
+        logger.info(f"BLIP视觉隐藏维度: {vision_hidden_dim}")
+        logger.info(f"BLIP词汇表大小: {vocab_size}")
+
+        if not load_base_model_only:
+            logger.info("Initializing emotion enhancement modules...")
+            # 情感编码器
+            self.emotion_encoder = EmotionEncoder(
+                num_emotions=self.num_emotions,
+                emotion_dim=emotion_dim,
+                max_emotions=max_emotions,
+                hidden_dim=hidden_dim,
+                dropout=dropout
+            )
+            print("[DEBUG] EmotionEncoder initialized.")
+            
+            # 情感特征适配层
+            self.emotion_adapter = nn.Sequential(
+                nn.Linear(hidden_dim, hidden_dim),
+                nn.LayerNorm(hidden_dim),
+                nn.GELU(),
+                nn.Dropout(dropout)
+            )
+            print("[DEBUG] EmotionAdapter initialized.")
+            
+            # 情感控制门
+            self.emotion_gate = nn.Sequential(
+                nn.Linear(hidden_dim * 2, 1),
+                nn.Sigmoid()
+            )
+            print("[DEBUG] EmotionGate initialized.")
+            
+            # 情感投影层 (用于直接处理logits的情况)
+            self.emotion_projector = nn.Linear(hidden_dim, vocab_size)
+            print("[DEBUG] EmotionProjector initialized.")
+
+            # --- 新增：情感分类头 ---
+            # 使用视觉模型的输出维度 (通常与文本模型相同)
+            self.emotion_classifier = nn.Linear(vision_hidden_dim, self.num_emotions)
+            logger.info(f"添加情感分类头: Linear({vision_hidden_dim}, {self.num_emotions})")
+            print("[DEBUG] EmotionClassifier initialized.")
+            # --- 结束新增 ---
+        else:
+            logger.info("Skipping initialization of emotion enhancement modules (load_base_model_only=True).")
+            # 显式地将这些模块设为 None 或其他哨兵值，以便后续检查
+            self.emotion_encoder = None
+            self.emotion_adapter = None
+            self.emotion_gate = None
+            self.emotion_projector = None
+            self.emotion_classifier = None
         print("[DEBUG] EmotionEnhancedBlipForCaption __init__ finished.")
         
     def get_emotion_representation(
