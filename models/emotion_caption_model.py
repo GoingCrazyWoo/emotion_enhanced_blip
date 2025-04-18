@@ -554,8 +554,15 @@ class EmotionEnhancedBlipForCaption(nn.Module):
                         print("[DEBUG] Using dummy loss (0.0) as total_loss")
             else:
                 print("[DEBUG] No labels provided, skipping caption loss calculation")
-                # 处理预测/推理情况
-                # ... existing code ...
+                # 处理预测/推理情况但确保有情感损失时能正确设置总损失
+                if emotion_loss is not None:
+                    # 当没有标题标签但有情感损失时，将情感损失作为总损失
+                    loss = emotion_loss_weight * emotion_loss
+                    print(f"[DEBUG] total_loss (emotion only): {loss}")
+                else:
+                    # 如果没有任何损失，使用dummy loss以避免训练失败
+                    loss = torch.tensor(0.0, device=pixel_values.device)
+                    print("[DEBUG] Using dummy loss (0.0) as total_loss")
                 
             print(f"[DEBUG] total_loss: {loss if loss is not None else 'N/A'}")
             
