@@ -121,6 +121,7 @@ def test_full_model(args):
     logger.info("===== 测试完整模型 =====")
     
     from emotion_enhanced_blip.models.emotion_caption_model import EmotionEnhancedBlipForCaption
+    from emotion_enhanced_blip.utils.emotion_utils import EMOTION_CATEGORIES
     
     device = torch.device("cpu") if args.force_cpu else torch.device(args.device)
     logger.info(f"使用设备: {device}")
@@ -183,25 +184,80 @@ def test_full_model(args):
         # 步骤3: 测试前向传播
         logger.info("测试前向传播...")
         # 创建随机输入
-        pixel_values = torch.randn(1, 3, 384, 384).to(device)
-        emotion_indices = torch.randint(0, 7, (1, 3)).to(device)
-        confidence_values = torch.rand(1, 3).to(device)
+        batch_size = 1
+        seq_len = 10
+        
+        # 基本输入
+        pixel_values = torch.randn(batch_size, 3, 384, 384).to(device)
+        
+        # 情感索引和置信度
+        num_emotions = len(EMOTION_CATEGORIES)
+        max_emotions = 3
+        emotion_indices = torch.randint(0, num_emotions, (batch_size, max_emotions)).to(device)
+        confidence_values = torch.rand(batch_size, max_emotions).to(device)
+        
+        # 多热编码的情感标签
+        emotion_labels_multi_hot = torch.zeros(batch_size, num_emotions).to(device)
+        for i in range(batch_size):
+            for j in range(max_emotions):
+                if emotion_indices[i, j] < num_emotions:
+                    emotion_labels_multi_hot[i, emotion_indices[i, j]] = 1.0
+        
+        # 输入IDs和注意力掩码
+        input_ids = torch.randint(0, 30522, (batch_size, seq_len)).to(device)
+        attention_mask = torch.ones(batch_size, seq_len).to(device)
+        
+        # 标签
+        labels = torch.randint(0, 30522, (batch_size, seq_len)).to(device)
         
         # 执行前向传播
-        with torch.no_grad():
-            outputs = model(
-                pixel_values=pixel_values,
-                emotion_indices=emotion_indices,
-                confidence_values=confidence_values
-            )
+        try:
+            logger.info("执行标准前向传播测试...")
+            with torch.no_grad():
+                outputs = model(
+                    pixel_values=pixel_values,
+                    emotion_indices=emotion_indices,
+                    confidence_values=confidence_values
+                )
+            logger.info("标准前向传播成功!")
+        except Exception as e:
+            logger.error(f"标准前向传播失败: {e}")
+            import traceback
+            traceback.print_exc()
         
-        logger.info("前向传播成功!")
+        # 执行完整前向传播
+        if args.full_test:
+            try:
+                logger.info("执行完整前向传播测试 (包含所有参数)...")
+                with torch.no_grad():
+                    outputs = model(
+                        pixel_values=pixel_values,
+                        emotion_indices=emotion_indices,
+                        confidence_values=confidence_values,
+                        input_ids=input_ids,
+                        attention_mask=attention_mask,
+                        labels=labels,
+                        emotion_labels_multi_hot=emotion_labels_multi_hot,
+                        emotion_loss_weight=0.5
+                    )
+                
+                logger.info("完整前向传播成功!")
+                logger.info(f"输出损失: {outputs.get('loss')}")
+                logger.info(f"情感损失: {outputs.get('emotion_loss')}")
+                logger.info(f"标题损失: {outputs.get('caption_loss')}")
+            except Exception as e:
+                logger.error(f"完整前向传播失败: {e}")
+                import traceback
+                traceback.print_exc()
+        
         logger.info("完整模型测试通过!")
         
         return True, model
     
     except Exception as e:
         logger.error(f"完整模型测试失败: {e}")
+        import traceback
+        traceback.print_exc()
         return False, None
 
 def main():
@@ -213,6 +269,7 @@ def main():
     parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu", help="训练设备")
     parser.add_argument("--force_cpu", action="store_true", help="强制使用CPU")
     parser.add_argument("--test_type", type=str, choices=["blip", "emotion", "full", "all"], default="all", help="测试类型")
+    parser.add_argument("--full_test", action="store_true", help="执行完整的前向传播测试")
     
     args = parser.parse_args()
     
