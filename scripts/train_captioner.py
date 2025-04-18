@@ -316,6 +316,7 @@ def train(args):
         "max_length": args.max_length,
         "freeze_blip": args.freeze_blip,
         "emotion_loss_weight": args.emotion_loss_weight, # 添加情感损失权重
+        "emotion_only": args.emotion_only, # 添加是否仅使用情感训练
         "train_samples": len(train_dataset),
         "val_samples": len(val_dataset),
         "annotations_path": args.annotations_path,
@@ -343,19 +344,34 @@ def train(args):
         for batch_idx, batch in enumerate(train_progress):
             # 将数据移到设备
             pixel_values = batch["pixel_values"].to(device)
-            labels = batch["labels"].to(device)
             emotion_indices = batch["emotion_indices"].to(device)
-            # confidence_values = batch["confidence_values"].to(device) # 当前未使用
-            attention_mask = batch["attention_mask"].to(device)  # 使用batch中的attention_mask
+            confidence_values = batch["confidence_values"].to(device)
             emotion_labels_multi_hot = batch["emotion_labels_multi_hot"].to(device)
+            
+            # 处理可选的标签和注意力掩码
+            input_ids = batch.get("labels", None)
+            attention_mask = batch.get("attention_mask", None)
+            labels = batch.get("labels", None)
+            
+            # 如果有标签且不是仅情感模式，移动到设备
+            if input_ids is not None and not args.emotion_only:
+                input_ids = input_ids.to(device)
+                attention_mask = attention_mask.to(device)
+                labels = labels.to(device)
+            else:
+                # 如果只训练情感，或者没有标签，设为None
+                input_ids = None
+                attention_mask = None
+                labels = None
 
             # 减少过多的调试信息，只在第一个批次显示
             if batch_idx == 0 and epoch == 0:
                 print(f"[DEBUG] First batch - pixel_values shape: {pixel_values.shape}, device: {pixel_values.device}")
-                print(f"[DEBUG] First batch - labels shape: {labels.shape}, device: {labels.device}")
                 print(f"[DEBUG] First batch - emotion_indices shape: {emotion_indices.shape}, device: {emotion_indices.device}")
                 print(f"[DEBUG] First batch - emotion_labels_multi_hot shape: {emotion_labels_multi_hot.shape}, device: {emotion_labels_multi_hot.device}")
-                print(f"[DEBUG] First batch - attention_mask shape: {attention_mask.shape}, device: {attention_mask.device}")
+                if labels is not None:
+                    print(f"[DEBUG] First batch - labels shape: {labels.shape}, device: {labels.device}")
+                    print(f"[DEBUG] First batch - attention_mask shape: {attention_mask.shape}, device: {attention_mask.device}")
 
             # 清除梯度
             optimizer.zero_grad()
@@ -363,27 +379,48 @@ def train(args):
             # 使用混合精度训练
             with autocast(enabled=args.fp16):
                 try:
-                    # 前向传播
-                    outputs = model(
-                        pixel_values=pixel_values,
-                        emotion_indices=emotion_indices, # 传递真实情感标签用于计算损失
-                        # confidence_values=confidence_values, # 当前未使用
-                        attention_mask=attention_mask,  # 传入注意力掩码
-                        input_ids=labels, # input_ids 用于生成
-                        labels=labels,    # labels 用于计算 caption loss
-                        emotion_loss_weight=args.emotion_loss_weight, # 传递损失权重
-                        emotion_labels_multi_hot=emotion_labels_multi_hot # 传递多热情感标签
-                    )
-
-                    # 只在第一个批次记录前向传播完成
-                    if batch_idx == 0 and epoch == 0:
-                        print(f"[DEBUG] First batch - Model forward completed.")
+                    # 前向传播，根据模式决定是否使用标题生成
+                    if args.emotion_only or labels is None:
+                        # 仅使用情感分类 (不计算标题生成损失)
+                        outputs = model(
+                            pixel_values=pixel_values,
+                            emotion_indices=emotion_indices,
+                            confidence_values=confidence_values,
+                            emotion_labels_multi_hot=emotion_labels_multi_hot,
+                            emotion_loss_weight=1.0  # 如果只使用情感损失，权重设为1
+                        )
+                    else:
+                        # 同时使用情感分类和标题生成 (尝试计算两种损失)
+                        try:
+                            outputs = model(
+                                pixel_values=pixel_values,
+                                emotion_indices=emotion_indices,
+                                confidence_values=confidence_values,
+                                input_ids=input_ids,
+                                attention_mask=attention_mask,
+                                labels=labels,
+                                emotion_labels_multi_hot=emotion_labels_multi_hot,
+                                emotion_loss_weight=args.emotion_loss_weight
+                            )
+                        except RuntimeError as e:
+                            if "mat1 and mat2 shapes cannot be multiplied" in str(e):
+                                logger.warning(f"矩阵维度不匹配错误，回退到仅使用情感分类: {e}")
+                                # 回退到仅使用情感分类
+                                outputs = model(
+                                    pixel_values=pixel_values,
+                                    emotion_indices=emotion_indices,
+                                    confidence_values=confidence_values,
+                                    emotion_labels_multi_hot=emotion_labels_multi_hot,
+                                    emotion_loss_weight=1.0  # 如果只使用情感损失，权重设为1
+                                )
+                            else:
+                                raise  # 重新抛出其他错误
                     
-                    # 获取总损失和子损失 (如果存在)
-                    loss = outputs.get("loss") # 总损失
-                    caption_loss = outputs.get("caption_loss")
+                    # 获取损失
+                    loss = outputs.get("loss")  # 总损失
+                    caption_loss = outputs.get("caption_loss") 
                     emotion_loss = outputs.get("emotion_loss")
-
+                    
                     # 只在第一个批次或出现异常值时记录损失
                     if batch_idx == 0 and epoch == 0:
                         print(f"[DEBUG] First batch - Loss: {loss.item() if loss is not None else 'N/A'}")
@@ -432,17 +469,23 @@ def train(args):
                     # 更新训练损失统计 (仅当loss有效时)
                     train_loss += loss.item()
                     if caption_loss is not None:
-                        train_caption_loss += caption_loss # caption_loss 已经是 item()
+                        train_caption_loss += caption_loss if isinstance(caption_loss, float) else caption_loss.item()
                     if emotion_loss is not None:
-                        train_emotion_loss += emotion_loss # emotion_loss 已经是 item()
+                        train_emotion_loss += emotion_loss if isinstance(emotion_loss, float) else emotion_loss.item()
                     train_batches += 1
 
                     # 更新进度条显示子损失
                     log_dict = {"loss": f"{loss.item():.4f}"}
                     if caption_loss is not None:
-                        log_dict["cap_loss"] = f"{caption_loss:.4f}"
+                        if isinstance(caption_loss, float):
+                            log_dict["cap_loss"] = f"{caption_loss:.4f}"
+                        else:
+                            log_dict["cap_loss"] = f"{caption_loss.item():.4f}"
                     if emotion_loss is not None:
-                        log_dict["emo_loss"] = f"{emotion_loss:.4f}"
+                        if isinstance(emotion_loss, float):
+                            log_dict["emo_loss"] = f"{emotion_loss:.4f}"
+                        else:
+                            log_dict["emo_loss"] = f"{emotion_loss.item():.4f}"
                     train_progress.set_postfix(log_dict)
                 except Exception as e:
                     logger.error(f"反向传播或优化步骤出错: {e}")
@@ -490,45 +533,81 @@ def train(args):
             for batch in val_progress:
                 # 将数据移到设备
                 pixel_values = batch["pixel_values"].to(device)
-                labels = batch["labels"].to(device)
                 emotion_indices = batch["emotion_indices"].to(device)
-                # confidence_values = batch["confidence_values"].to(device) # 当前未使用
-                attention_mask = batch["attention_mask"].to(device)  # 使用batch中的attention_mask
+                confidence_values = batch["confidence_values"].to(device)
+                emotion_labels_multi_hot = batch["emotion_labels_multi_hot"].to(device)
+                
+                # 处理可选的标签和注意力掩码
+                input_ids = batch.get("labels", None)
+                attention_mask = batch.get("attention_mask", None)
+                labels = batch.get("labels", None)
+                
+                # 如果有标签且不是仅情感模式，移动到设备
+                if input_ids is not None and not args.emotion_only:
+                    input_ids = input_ids.to(device)
+                    attention_mask = attention_mask.to(device)
+                    labels = labels.to(device)
+                else:
+                    # 如果只训练情感，或者没有标签，设为None
+                    input_ids = None
+                    attention_mask = None
+                    labels = None
 
                 # 验证时也使用混合精度，但不需要梯度
                 with autocast(enabled=args.fp16):
-                    # 前向传播
-                    outputs = model(
-                        pixel_values=pixel_values,
-                        emotion_indices=emotion_indices,
-                        # confidence_values=confidence_values,
-                        attention_mask=attention_mask,  # 传入注意力掩码
-                        labels=labels,
-                        input_ids=labels, # 验证时也需要计算损失
-                        emotion_loss_weight=args.emotion_loss_weight, # 传递权重
-                        emotion_labels_multi_hot=batch["emotion_labels_multi_hot"].to(device) # 传递多热情感标签
-                    )
+                    try:
+                        # 前向传播，根据模式决定是否使用标题生成
+                        if args.emotion_only or labels is None:
+                            # 仅使用情感分类 (不计算标题生成损失)
+                            outputs = model(
+                                pixel_values=pixel_values,
+                                emotion_indices=emotion_indices,
+                                confidence_values=confidence_values,
+                                emotion_labels_multi_hot=emotion_labels_multi_hot,
+                                emotion_loss_weight=1.0  # 如果只使用情感损失，权重设为1
+                            )
+                        else:
+                            # 同时使用情感分类和标题生成
+                            outputs = model(
+                                pixel_values=pixel_values,
+                                emotion_indices=emotion_indices,
+                                confidence_values=confidence_values,
+                                input_ids=input_ids,
+                                attention_mask=attention_mask,
+                                labels=labels,
+                                emotion_labels_multi_hot=emotion_labels_multi_hot,
+                                emotion_loss_weight=args.emotion_loss_weight
+                            )
 
-                    loss = outputs.get("loss")
-                    caption_loss = outputs.get("caption_loss")
-                    emotion_loss = outputs.get("emotion_loss")
+                        loss = outputs.get("loss")
+                        caption_loss = outputs.get("caption_loss")
+                        emotion_loss = outputs.get("emotion_loss")
+                        
+                        # 更新验证损失 (仅当 loss 有效时)
+                        if loss is not None:
+                            val_loss += loss.item()
+                            if caption_loss is not None:
+                                val_caption_loss += caption_loss if isinstance(caption_loss, float) else caption_loss.item()
+                            if emotion_loss is not None:
+                                val_emotion_loss += emotion_loss if isinstance(emotion_loss, float) else emotion_loss.item()
+                            val_batches += 1
 
-                # 更新验证损失 (仅当 loss 有效时)
-                if loss is not None:
-                    val_loss += loss.item()
-                    if caption_loss is not None:
-                        val_caption_loss += caption_loss # item()
-                    if emotion_loss is not None:
-                        val_emotion_loss += emotion_loss # item()
-                    val_batches += 1
-
-                    # 更新进度条
-                    log_dict = {"loss": f"{loss.item():.4f}"}
-                    if caption_loss is not None:
-                        log_dict["cap_loss"] = f"{caption_loss:.4f}"
-                    if emotion_loss is not None:
-                        log_dict["emo_loss"] = f"{emotion_loss:.4f}"
-                    val_progress.set_postfix(log_dict)
+                            # 更新进度条
+                            log_dict = {"loss": f"{loss.item():.4f}"}
+                            if caption_loss is not None:
+                                if isinstance(caption_loss, float):
+                                    log_dict["cap_loss"] = f"{caption_loss:.4f}"
+                                else:
+                                    log_dict["cap_loss"] = f"{caption_loss.item():.4f}"
+                            if emotion_loss is not None:
+                                if isinstance(emotion_loss, float):
+                                    log_dict["emo_loss"] = f"{emotion_loss:.4f}"
+                                else:
+                                    log_dict["emo_loss"] = f"{emotion_loss.item():.4f}"
+                            val_progress.set_postfix(log_dict)
+                    except Exception as e:
+                        logger.error(f"验证前向传播错误: {e}")
+                        continue
 
         # 计算平均验证损失 (确保 val_batches > 0)
         avg_val_loss = val_loss / val_batches if val_batches > 0 else 0.0
@@ -597,6 +676,7 @@ def main():
     parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu", help="训练设备")
     parser.add_argument("--fp16", action="store_true", default=False, help="是否使用半精度(FP16)训练")
     parser.add_argument("--emotion_loss_weight", type=float, default=0.5, help="情感分类损失的权重") # 新增参数
+    parser.add_argument("--emotion_only", action="store_true", help="是否仅训练情感分类部分") # 新增参数
 
     # 其他参数
     parser.add_argument("--proxy", type=str, default="http://127.0.0.1:7890", help="HTTP代理URL")
