@@ -29,39 +29,44 @@ def collate_fn(batch):
     """数据批次整理函数"""
     # 过滤掉空样本
     batch = [item for item in batch if item is not None and "pixel_values" in item and "labels" in item]
-    
+
     # 如果批次为空，返回默认批次
     if not batch:
+        # 需要确定默认的 emotion_labels_multi_hot 格式
+        num_emotion_categories = len(EMOTION_CATEGORIES) # 获取类别数
         return {
             "pixel_values": torch.zeros((1, 3, 384, 384)),
             "labels": torch.zeros((1, 10), dtype=torch.long),
             "emotion_indices": torch.zeros((1, 1), dtype=torch.long),
             "confidence_values": torch.zeros((1, 1), dtype=torch.float),
-            "attention_mask": torch.zeros((1, 10), dtype=torch.long)  # 添加默认注意力掩码
+            "attention_mask": torch.zeros((1, 10), dtype=torch.long),
+            "emotion_labels_multi_hot": torch.zeros((1, num_emotion_categories), dtype=torch.float) # 添加默认 multi-hot
         }
-    
+
     # 提取所有批次的项目
     pixel_values = torch.stack([item["pixel_values"] for item in batch])
-    
+
     # 获取标签的最大长度
     max_label_len = max(item["labels"].size(0) for item in batch if "labels" in item)
-    
+
     # 准备批处理张量
     labels = torch.full((len(batch), max_label_len), fill_value=-100, dtype=torch.long)
     attention_mask = torch.zeros((len(batch), max_label_len), dtype=torch.long)  # 注意力掩码
-    
+
     # 情感标签处理
-    max_emotions = max(len(item["emotion_indices"]) for item in batch)
+    num_emotion_categories = len(EMOTION_CATEGORIES) # 获取类别数
+    max_emotions = max(len(item.get("emotion_indices", [])) for item in batch) # 使用 get 避免 KeyError
     if max_emotions == 0:
         max_emotions = 1  # 确保至少有一个情感
-    
+
     # 使用正确的填充索引
-    padding_idx = len(EMOTION_CATEGORIES)
+    padding_idx = num_emotion_categories # 填充索引是类别数
     emotion_indices = torch.full((len(batch), max_emotions), fill_value=padding_idx, dtype=torch.long)
     confidence_values = torch.zeros((len(batch), max_emotions), dtype=torch.float)
-    
+
     ids = []
-    
+    original_emotion_indices_list = [] # 存储原始情感索引列表
+
     # 填充或截断批次中的每个项目
     for i, item in enumerate(batch):
         # 处理标签
@@ -70,23 +75,43 @@ def collate_fn(batch):
             labels[i, :seq_len] = item["labels"]
             # 设置注意力掩码：非填充位置（非-100）为1，填充位置为0
             attention_mask[i, :seq_len] = (item["labels"] != -100).long()
-        
+
         # 处理情感标签
-        if "emotion_indices" in item and len(item["emotion_indices"]) > 0:
-            emotion_len = min(len(item["emotion_indices"]), max_emotions)
-            emotion_indices[i, :emotion_len] = torch.tensor(item["emotion_indices"][:emotion_len], dtype=torch.long)
-            confidence_values[i, :emotion_len] = torch.tensor(item["confidence_values"][:emotion_len], dtype=torch.float)
-        
+        current_emotion_indices = item.get("emotion_indices", []) # 使用 get
+        original_emotion_indices_list.append(current_emotion_indices) # 存储原始列表
+
+        if current_emotion_indices: # 检查列表是否非空
+            emotion_len = min(len(current_emotion_indices), max_emotions)
+            # 确保索引有效
+            valid_indices = [idx for idx in current_emotion_indices[:emotion_len] if idx < num_emotion_categories]
+            if valid_indices:
+                emotion_indices[i, :len(valid_indices)] = torch.tensor(valid_indices, dtype=torch.long)
+                # 确保 confidence_values 长度匹配
+                current_confidences = item.get("confidence_values", [])
+                if len(current_confidences) >= len(valid_indices):
+                     confidence_values[i, :len(valid_indices)] = torch.tensor(current_confidences[:len(valid_indices)], dtype=torch.float)
+                # 如果置信度列表短于有效索引列表，可能需要警告或默认值
+
         # 收集ID
         if "id" in item:
             ids.append(item["id"])
-    
+
+    # 创建 multi-hot 编码的情感标签
+    emotion_labels_multi_hot = torch.zeros((len(batch), num_emotion_categories), dtype=torch.float)
+    for i, indices in enumerate(original_emotion_indices_list):
+        if indices: # 检查列表是否非空
+             # 再次过滤，确保只使用有效的、小于类别数的索引
+            valid_indices_for_multihot = [idx for idx in indices if idx < num_emotion_categories]
+            if valid_indices_for_multihot:
+                 emotion_labels_multi_hot[i, valid_indices_for_multihot] = 1.0
+
     return {
         "pixel_values": pixel_values,
         "labels": labels,
         "attention_mask": attention_mask,  # 添加注意力掩码
-        "emotion_indices": emotion_indices,
+        "emotion_indices": emotion_indices, # LongTensor for embedding lookup/encoder
         "confidence_values": confidence_values,
+        "emotion_labels_multi_hot": emotion_labels_multi_hot, # FloatTensor for BCE loss
         "ids": ids
     }
 

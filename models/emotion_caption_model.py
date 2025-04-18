@@ -398,7 +398,8 @@ class EmotionEnhancedBlipForCaption(nn.Module):
     def forward(
         self,
         pixel_values: torch.FloatTensor,
-        emotion_indices: Optional[torch.LongTensor] = None, # 真实情感标签 (用于计算损失)
+        emotion_indices: Optional[torch.LongTensor] = None, # 真实情感标签 (LongTensor, 可能用于 EmotionEncoder)
+        emotion_labels_multi_hot: Optional[torch.FloatTensor] = None, # 真实情感标签 (Multi-hot FloatTensor, 用于 BCE Loss)
         confidence_values: Optional[torch.FloatTensor] = None, # 置信度（目前未使用）
         input_ids: Optional[torch.LongTensor] = None, # 标题生成输入
         attention_mask: Optional[torch.LongTensor] = None, # 标题生成掩码
@@ -412,8 +413,9 @@ class EmotionEnhancedBlipForCaption(nn.Module):
 
         参数:
             pixel_values: 图像的像素值 [batch_size, 3, height, width]。
-            emotion_indices: 真实情感索引 [batch_size, max_emotions]。如果提供，将计算情感分类损失。
-                           期望包含有效的情感索引（0 到 num_emotions-1）和填充值（例如 -1 或 num_emotions）。
+            emotion_indices: 真实情感索引 (LongTensor) [batch_size, max_emotions]。可能传递给 EmotionEncoder。
+                           期望包含有效的情感索引（0 到 num_emotions-1）和填充值（例如 num_emotions）。
+            emotion_labels_multi_hot: 真实情感标签 (Multi-hot FloatTensor) [batch_size, num_emotions]。用于计算情感分类损失。
             confidence_values: 情感置信度 [batch_size, max_emotions] (当前未使用)。
             input_ids: 标题生成的输入 token IDs [batch_size, seq_len]。
             attention_mask: 标题生成的注意力掩码 [batch_size, seq_len]。
@@ -444,26 +446,24 @@ class EmotionEnhancedBlipForCaption(nn.Module):
         # 传递给情感分类头 (emotion_classifier 总是可训练的)
         emotion_logits = self.emotion_classifier(image_embeds) # [batch_size, num_emotions]
 
-        # --- 2. 计算情感分类损失 (如果提供了真实情感标签) ---
+        # --- 2. 计算情感分类损失 (如果提供了 multi-hot 标签) ---
         emotion_loss = None
-        if emotion_indices is not None:
-            batch_size = emotion_indices.size(0)
-            # 创建 multi-hot 目标向量
-            target_emotions_multi_hot = torch.zeros(batch_size, self.num_emotions, device=pixel_values.device, dtype=torch.float)
-            for i in range(batch_size):
-                # 只选择有效的、非填充的情感索引 (>= 0 且 < num_emotions)
-                valid_emotions = emotion_indices[i][(emotion_indices[i] >= 0) & (emotion_indices[i] < self.num_emotions)]
-                if len(valid_emotions) > 0:
-                    # 使用 scatter_ 将对应位置设为 1.0
-                    target_emotions_multi_hot[i].scatter_(0, valid_emotions.long(), 1.0)
+        if emotion_labels_multi_hot is not None:
+            # 确保 target tensor 是 FloatTensor
+            if emotion_labels_multi_hot.dtype != torch.float:
+                 emotion_labels_multi_hot = emotion_labels_multi_hot.float()
 
             # 使用 BCEWithLogitsLoss (适用于多标签分类)
             emotion_loss_criterion = nn.BCEWithLogitsLoss()
-            emotion_loss = emotion_loss_criterion(emotion_logits, target_emotions_multi_hot)
+            emotion_loss = emotion_loss_criterion(emotion_logits, emotion_labels_multi_hot)
+
             # 防止因数值问题导致 loss 为 NaN 或 inf
             if torch.isnan(emotion_loss) or torch.isinf(emotion_loss):
-                logger.warning(f"Emotion loss is NaN or Inf. Emotion logits: {emotion_logits}, Targets: {target_emotions_multi_hot}")
+                logger.warning(f"Emotion loss is NaN or Inf. Emotion logits: {emotion_logits}, Targets: {emotion_labels_multi_hot}")
                 emotion_loss = torch.tensor(0.0, device=pixel_values.device, requires_grad=True) # 设为0并保持梯度
+        elif emotion_indices is not None:
+             # 如果只提供了旧的 emotion_indices，记录一个警告
+             logger.warning("Received 'emotion_indices' but not 'emotion_labels_multi_hot'. Cannot calculate emotion loss with BCEWithLogitsLoss directly. Emotion loss will be None.")
 
         # --- 3. 计算标题生成损失 (如果提供了标签) ---
         caption_loss = None
@@ -472,6 +472,9 @@ class EmotionEnhancedBlipForCaption(nn.Module):
             # BLIP 模型前向传播 (标题生成)
             # 使用 torch.set_grad_enabled 控制 BLIP 部分的梯度计算
             with torch.set_grad_enabled(not self.freeze_blip):
+                # 注意：这里不传递 emotion_indices 或 confidence_values 给 BLIP 模型本身
+                # 情感信息主要通过 emotion_classifier 影响损失，
+                # 或通过 LogitsProcessor 影响生成过程（见 generate 方法）
                 blip_outputs = self.blip_model(
                     pixel_values=pixel_values, # 传递像素值，BLIP内部处理视觉部分
                     input_ids=input_ids,
@@ -522,7 +525,7 @@ class EmotionEnhancedBlipForCaption(nn.Module):
         if len(valid_losses) > 0:
              # 使用 torch.stack 确保梯度传播
              total_loss = torch.stack(valid_losses).sum()
-        # 如果没有可训练的损失 (例如 BLIP 冻结且未提供 emotion_indices)，total_loss 保持为 None
+        # 如果没有可训练的损失 (例如 BLIP 冻结且未提供 emotion_indices/multi_hot)，total_loss 保持为 None
 
         # --- 5. 准备输出 ---
         if not return_dict:
