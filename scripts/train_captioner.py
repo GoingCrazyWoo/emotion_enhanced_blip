@@ -312,7 +312,8 @@ def train(args):
                     attention_mask=attention_mask,  # 传入注意力掩码
                     input_ids=labels, # input_ids 用于生成
                     labels=labels,    # labels 用于计算 caption loss
-                    emotion_loss_weight=args.emotion_loss_weight # 传递损失权重
+                    emotion_loss_weight=args.emotion_loss_weight, # 传递损失权重
+                    emotion_labels_multi_hot=batch["emotion_labels_multi_hot"].to(device) # 传递多热情感标签
                 )
 
                 # 获取总损失和子损失 (如果存在)
@@ -400,7 +401,8 @@ def train(args):
                         attention_mask=attention_mask,  # 传入注意力掩码
                         labels=labels,
                         input_ids=labels, # 验证时也需要计算损失
-                        emotion_loss_weight=args.emotion_loss_weight # 传递权重
+                        emotion_loss_weight=args.emotion_loss_weight, # 传递权重
+                        emotion_labels_multi_hot=batch["emotion_labels_multi_hot"].to(device) # 传递多热情感标签
                     )
 
                     loss = outputs.get("loss")
