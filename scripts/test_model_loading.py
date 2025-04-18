@@ -7,6 +7,7 @@ import argparse
 import torch
 import logging
 from transformers import BlipProcessor, BlipForConditionalGeneration
+import json
 
 # 添加项目根目录到Python路径
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
@@ -210,7 +211,22 @@ def test_full_model(args):
         # 标签
         labels = torch.randint(0, 30522, (batch_size, seq_len)).to(device)
         
-        # 执行前向传播
+        # 步骤4: 添加诊断信息收集
+        model_diagnostics = {}
+        # 收集模型架构信息
+        if hasattr(model, 'blip'):
+            model_diagnostics["blip_model_name"] = model.blip.config.name_or_path if hasattr(model.blip.config, 'name_or_path') else "Unknown"
+            model_diagnostics["text_config"] = {
+                "hidden_size": model.blip.config.text_config.hidden_size,
+                "vocab_size": model.blip.config.text_config.vocab_size,
+            }
+            model_diagnostics["vision_config"] = {
+                "hidden_size": model.blip.config.vision_config.hidden_size
+            }
+        
+        logger.info(f"模型诊断信息: {json.dumps(model_diagnostics, indent=2)}")
+        
+        # 执行标准前向传播
         try:
             logger.info("执行标准前向传播测试...")
             with torch.no_grad():
@@ -245,12 +261,101 @@ def test_full_model(args):
                 logger.info(f"输出损失: {outputs.get('loss')}")
                 logger.info(f"情感损失: {outputs.get('emotion_loss')}")
                 logger.info(f"标题损失: {outputs.get('caption_loss')}")
+            except RuntimeError as e:
+                error_msg = str(e)
+                logger.error(f"完整前向传播失败: {error_msg}")
+                
+                # 检查是否是矩阵维度不匹配错误
+                if "mat1 and mat2 shapes cannot be multiplied" in error_msg:
+                    logger.error("检测到矩阵维度不匹配错误!")
+                    # 提取错误中的维度信息
+                    import re
+                    dims = re.findall(r'\d+x\d+', error_msg)
+                    if dims:
+                        logger.error(f"不匹配的维度: {dims}")
+                    
+                    # 提供解决方案
+                    logger.info("\n===== 解决方案 =====")
+                    logger.info("1. 这是模型内部矩阵维度不匹配问题，可能由以下原因导致:")
+                    logger.info("   - BLIP模型版本与代码不兼容")
+                    logger.info("   - 情感特征与BLIP文本编码器维度不匹配")
+                    logger.info("   - 输入标签格式不正确")
+                    
+                    logger.info("\n2. 在训练脚本中添加以下错误处理:")
+                    logger.info("""
+# 在train_captioner.py的前向传播部分添加以下代码:
+try:
+    outputs = model(
+        pixel_values=pixel_values,
+        emotion_indices=emotion_indices,
+        attention_mask=attention_mask,
+        input_ids=labels,
+        labels=labels,
+        emotion_loss_weight=args.emotion_loss_weight,
+        emotion_labels_multi_hot=emotion_labels_multi_hot
+    )
+except RuntimeError as e:
+    if "mat1 and mat2 shapes cannot be multiplied" in str(e):
+        logger.warning(f"矩阵维度不匹配错误: {e}")
+        logger.warning("回退到仅使用情感分类，跳过标题生成")
+        # 尝试仅使用情感分类
+        outputs = model(
+            pixel_values=pixel_values,
+            emotion_indices=emotion_indices,
+            emotion_labels_multi_hot=emotion_labels_multi_hot
+        )
+    else:
+        raise  # 重新抛出其他错误
+                    """)
+                    
+                    logger.info("\n3. 或者修改模型的forward方法，使其能够处理此错误:")
+                    logger.info("""
+# 在models/emotion_caption_model.py的caption_loss计算部分添加:
+try:
+    # 调用BLIP计算caption loss
+    blip_outputs = self.blip(
+        pixel_values=pixel_values,
+        input_ids=input_ids,
+        attention_mask=attention_mask,
+        labels=labels,
+        return_dict=True
+    )
+    caption_loss = blip_outputs.loss.item()
+except RuntimeError as e:
+    if "mat1 and mat2 shapes cannot be multiplied" in str(e):
+        logger.warning(f"矩阵维度不匹配，跳过标题生成: {e}")
+        caption_loss = None
+    else:
+        raise
+                    """)
+                    
+                    # 测试仅使用情感分类的回退方案
+                    logger.info("\n正在测试仅使用情感分类的回退方案...")
+                    try:
+                        with torch.no_grad():
+                            outputs = model(
+                                pixel_values=pixel_values,
+                                emotion_indices=emotion_indices,
+                                confidence_values=confidence_values,
+                                emotion_labels_multi_hot=emotion_labels_multi_hot
+                            )
+                        
+                        emotion_loss = outputs.get("emotion_loss")
+                        logger.info(f"回退方案测试成功! 情感损失: {emotion_loss}")
+                        logger.info("结论: 可以通过跳过标题生成部分继续训练，仅使用情感分类损失")
+                    except Exception as e:
+                        logger.error(f"回退方案测试失败: {e}")
+                else:
+                    # 其他类型的运行时错误
+                    import traceback
+                    traceback.print_exc()
             except Exception as e:
-                logger.error(f"完整前向传播失败: {e}")
+                # 非运行时错误
+                logger.error(f"完整前向传播遇到未知错误: {e}")
                 import traceback
                 traceback.print_exc()
         
-        logger.info("完整模型测试通过!")
+        logger.info("完整模型测试完成")
         
         return True, model
     
