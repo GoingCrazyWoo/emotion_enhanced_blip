@@ -275,35 +275,52 @@ class EmotionEnhancedBlipForCaption(nn.Module):
         # 保存参数
         self.freeze_blip = freeze_blip
         self.num_emotions = len(EMOTION_CATEGORIES) # 添加 num_emotions 属性
-
-        # 加载BLIP模型
+        
+        # 加载BLIP处理器和模型，添加错误处理
         try:
-            logger.info(f"加载BLIP模型: {blip_model_name}")
-            proxies = {"http": proxy, "https": proxy} if proxy else None
-            self.processor = BlipProcessor.from_pretrained(blip_model_name, proxies=proxies)
+            logger.info(f"正在加载BLIP处理器: {blip_model_name}")
+            self.processor = BlipProcessor.from_pretrained(blip_model_name, proxies=proxy)
             print("[DEBUG] BlipProcessor loaded.")
-            self.blip_model = BlipForConditionalGeneration.from_pretrained(
-                blip_model_name,
-                proxies=proxies
-            )
-            print("[DEBUG] BlipForConditionalGeneration loaded.")
-        except Exception as e:
-            logger.error(f"加载BLIP模型失败: {e}")
-            raise
             
-        # 冻结BLIP模型参数
+            logger.info(f"正在加载BLIP模型: {blip_model_name}")
+            # 使用try-except捕获可能的OOM或其他错误
+            try:
+                self.blip = BlipForConditionalGeneration.from_pretrained(blip_model_name, proxies=proxy)
+                print("[DEBUG] BlipForConditionalGeneration loaded.")
+            except Exception as e:
+                # 如果出现错误，尝试使用CPU加载然后再移动到设备
+                logger.warning(f"使用默认设备加载BLIP模型失败: {str(e)}")
+                logger.info("尝试使用CPU加载BLIP模型...")
+                
+                import gc
+                gc.collect()
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+                    
+                self.blip = BlipForConditionalGeneration.from_pretrained(
+                    blip_model_name, 
+                    proxies=proxy,
+                    torch_dtype=torch.float32,  # 使用FP32而不是FP16
+                    device_map="auto"  # 允许模型自动决定设备分配
+                )
+                print("[DEBUG] BlipForConditionalGeneration loaded with alternative settings.")
+        except Exception as e:
+            logger.error(f"加载BLIP模型或处理器失败: {str(e)}")
+            raise RuntimeError(f"无法加载BLIP模型: {str(e)}")
+        
+        # 冻结BLIP参数
         if freeze_blip:
             logger.info("冻结BLIP模型参数")
-            for param in self.blip_model.parameters():
+            for param in self.blip.parameters():
                 param.requires_grad = False
-                print("[DEBUG] BLIP parameters frozen.")
+            print("[DEBUG] BLIP parameters frozen.")
                 
         # 情感编码器
-        hidden_dim = self.blip_model.config.text_config.hidden_size
+        hidden_dim = self.blip.config.text_config.hidden_size
         logger.info(f"BLIP文本隐藏维度: {hidden_dim}")
         
         self.emotion_encoder = EmotionEncoder(
-            num_emotions=self.num_emotions, # 使用 self.num_emotions
+            num_emotions=len(EMOTION_CATEGORIES), # 使用 self.num_emotions
             emotion_dim=emotion_dim,
             max_emotions=max_emotions,
             hidden_dim=hidden_dim,
@@ -328,15 +345,15 @@ class EmotionEnhancedBlipForCaption(nn.Module):
         print("[DEBUG] EmotionGate initialized.")
         
         # 情感投影层 (用于直接处理logits的情况)
-        vocab_size = self.blip_model.config.text_config.vocab_size
+        vocab_size = self.blip.config.text_config.vocab_size
         self.emotion_projector = nn.Linear(hidden_dim, vocab_size)
         print("[DEBUG] EmotionProjector initialized.")
 
         # --- 新增：情感分类头 ---
         # 使用视觉模型的输出维度 (通常与文本模型相同)
-        vision_hidden_dim = self.blip_model.config.vision_config.hidden_size
-        self.emotion_classifier = nn.Linear(vision_hidden_dim, self.num_emotions)
-        logger.info(f"添加情感分类头: Linear({vision_hidden_dim}, {self.num_emotions})")
+        vision_hidden_dim = self.blip.config.vision_config.hidden_size
+        self.emotion_classifier = nn.Linear(vision_hidden_dim, len(EMOTION_CATEGORIES))
+        logger.info(f"添加情感分类头: Linear({vision_hidden_dim}, {len(EMOTION_CATEGORIES)})")
         print("[DEBUG] EmotionClassifier initialized.")
         # --- 结束新增 ---
         print("[DEBUG] EmotionEnhancedBlipForCaption __init__ finished.")
@@ -376,7 +393,7 @@ class EmotionEnhancedBlipForCaption(nn.Module):
         # 1. 使用 BLIP 视觉编码器提取图像特征
         # 注意：即使冻结了BLIP，我们仍然可以进行前向传播
         with torch.no_grad(): # 通常在推理时不计算梯度
-            vision_outputs = self.blip_model.vision_model(pixel_values=pixel_values)
+            vision_outputs = self.blip.vision_model(pixel_values=pixel_values)
             # 获取池化后的输出 (通常是 CLS token 的特征)
             image_embeds = vision_outputs.pooler_output # 形状: [batch_size, vision_hidden_dim]
 
@@ -441,7 +458,7 @@ class EmotionEnhancedBlipForCaption(nn.Module):
             - logits: 标题生成的 logits (如果计算)。
             - emotion_logits: 情感分类的 logits。
         """
-        return_dict = return_dict if return_dict is not None else self.blip_model.config.use_return_dict
+        return_dict = return_dict if return_dict is not None else self.blip.config.use_return_dict
 
         # --- 1. 视觉特征提取和情感分类 ---
         # 注意：即使 freeze_blip=True，这里也需要计算梯度，因为 emotion_classifier 是可训练的
@@ -449,7 +466,7 @@ class EmotionEnhancedBlipForCaption(nn.Module):
         # 如果进行标题生成，BLIP 内部也会计算 vision_outputs，但为了代码清晰，我们先计算一次
         # 确保 vision_model 的梯度计算根据 freeze_blip 控制
         with torch.set_grad_enabled(not self.freeze_blip):
-            vision_outputs = self.blip_model.vision_model(pixel_values=pixel_values, return_dict=True)
+            vision_outputs = self.blip.vision_model(pixel_values=pixel_values, return_dict=True)
         # 池化后的输出需要梯度，以便传递给可训练的 emotion_classifier
         image_embeds = vision_outputs.pooler_output # [batch_size, vision_hidden_dim]
 
@@ -487,7 +504,7 @@ class EmotionEnhancedBlipForCaption(nn.Module):
                 # 注意：这里不传递 emotion_indices 或 confidence_values 给 BLIP 模型本身
                 # 情感信息主要通过 emotion_classifier 影响损失，
                 # 或通过 LogitsProcessor 影响生成过程（见 generate 方法）
-                blip_outputs = self.blip_model(
+                blip_outputs = self.blip(
                     pixel_values=pixel_values, # 传递像素值，BLIP内部处理视觉部分
                     input_ids=input_ids,
                     attention_mask=attention_mask,
@@ -512,7 +529,7 @@ class EmotionEnhancedBlipForCaption(nn.Module):
         elif input_ids is not None:
              # 如果只提供 input_ids 而没有 labels (例如，在推理时调用 forward 获取 logits)
              with torch.no_grad(): # 推理时不需要梯度
-                 blip_outputs = self.blip_model(
+                 blip_outputs = self.blip(
                      pixel_values=pixel_values,
                      input_ids=input_ids,
                      attention_mask=attention_mask,
@@ -661,7 +678,7 @@ class EmotionEnhancedBlipForCaption(nn.Module):
         generate_kwargs.setdefault("top_p", 0.9)
 
         # 5. 调用基础模型的 generate 方法，传入修改后的 logits_processor
-        outputs = self.blip_model.generate(
+        outputs = self.blip.generate(
             pixel_values=pixel_values,
             input_ids=input_ids,
             attention_mask=attention_mask,
@@ -681,13 +698,18 @@ class EmotionEnhancedBlipForCaption(nn.Module):
         num_beams=5,
         **generate_kwargs
     ):
-        """从图像和情感信息生成描述"""
+        """生成图像描述"""
+        # 处理输入
         if image is not None and pixel_values is None:
-            # 处理输入图像
+            # 使用处理器预处理图像
             inputs = self.processor(images=image, return_tensors="pt")
-            pixel_values = inputs.pixel_values.to(self.device)
+            pixel_values = inputs.pixel_values
         
-        # 生成文本
+        # 确保像素值在正确的设备上
+        if pixel_values is not None:
+            pixel_values = pixel_values.to(self.device)
+        
+        # 调用generate方法
         generated_ids = self.generate(
             pixel_values=pixel_values,
             emotion_indices=emotion_indices,
@@ -697,12 +719,57 @@ class EmotionEnhancedBlipForCaption(nn.Module):
             **generate_kwargs
         )
         
-        # 解码生成的文本
-        captions = self.processor.batch_decode(generated_ids, skip_special_tokens=True)
+        # 解码生成的ID
+        generated_text = self.processor.batch_decode(generated_ids, skip_special_tokens=True)
         
-        return captions[0] if len(captions) == 1 else captions
+        return generated_text[0] if len(generated_text) == 1 else generated_text
     
     @property
     def device(self):
-        """获取模型所在设备"""
-        return next(self.parameters()).device 
+        """获取模型所在的设备"""
+        return next(self.parameters()).device
+
+    def to(self, *args, **kwargs):
+        """
+        重写to方法，确保递归地将所有子模块移动到正确的设备
+        
+        这个方法会被torch.nn.Module自动调用，但我们需要确保所有自定义组件都正确移动
+        """
+        # 首先调用父类的to方法
+        device = args[0] if args else kwargs.get('device', None)
+        if device:
+            logger.info(f"将模型移动到设备: {device}")
+            try:
+                # 显式地将子模块移动到设备
+                if hasattr(self, 'blip'):
+                    self.blip = self.blip.to(*args, **kwargs)
+                    logger.info("BLIP模型已移动到设备")
+                
+                if hasattr(self, 'emotion_encoder'):
+                    self.emotion_encoder = self.emotion_encoder.to(*args, **kwargs)
+                    logger.info("Emotion Encoder已移动到设备")
+                    
+                if hasattr(self, 'emotion_adapter'):
+                    self.emotion_adapter = self.emotion_adapter.to(*args, **kwargs)
+                    logger.info("Emotion Adapter已移动到设备")
+                    
+                if hasattr(self, 'emotion_gate'):
+                    self.emotion_gate = self.emotion_gate.to(*args, **kwargs)
+                    logger.info("Emotion Gate已移动到设备")
+                    
+                if hasattr(self, 'emotion_projector'):
+                    self.emotion_projector = self.emotion_projector.to(*args, **kwargs)
+                    logger.info("Emotion Projector已移动到设备")
+                    
+                if hasattr(self, 'emotion_classifier'):
+                    self.emotion_classifier = self.emotion_classifier.to(*args, **kwargs)
+                    logger.info("Emotion Classifier已移动到设备")
+                    
+                # 然后调用nn.Module的to方法，确保所有参数正确移动
+                return super().to(*args, **kwargs)
+            except Exception as e:
+                logger.error(f"移动模型到设备时出错: {str(e)}")
+                raise
+        else:
+            # 如果没有指定设备，仅调用父类的to方法
+            return super().to(*args, **kwargs) 

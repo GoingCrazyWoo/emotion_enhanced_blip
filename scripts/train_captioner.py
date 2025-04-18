@@ -147,12 +147,27 @@ def train(args):
     
     # 初始化模型
     logger.info(f"使用BLIP模型: {args.blip_model}")
-    model = EmotionEnhancedBlipForCaption(
-        blip_model_name=args.blip_model,
-        freeze_blip=args.freeze_blip,
-        proxy=args.proxy
-    )
-    print("[DEBUG] Model instance created.")
+    try:
+        model = EmotionEnhancedBlipForCaption(
+            blip_model_name=args.blip_model,
+            freeze_blip=args.freeze_blip,
+            proxy=args.proxy
+        )
+        print("[DEBUG] Model instance created.")
+    except Exception as e:
+        logger.error(f"创建模型实例失败: {e}")
+        # 尝试使用更保守的设置
+        logger.info("尝试使用更保守的设置创建模型...")
+        try:
+            model = EmotionEnhancedBlipForCaption(
+                blip_model_name=args.blip_model,
+                freeze_blip=True,  # 强制冻结BLIP
+                proxy=None  # 禁用代理
+            )
+            print("[DEBUG] Model instance created with conservative settings.")
+        except Exception as e:
+            logger.error(f"使用保守设置创建模型也失败: {e}")
+            sys.exit(1)  # 退出程序
     
     # 加载模型参数
     if args.load_model_path:
@@ -191,9 +206,35 @@ def train(args):
         model.load_state_dict(state_dict, strict=False)
         logger.info("模型参数加载完成。")
         
+    # 移动模型到设备
     print("[DEBUG] Moving model to device...")
-    model.to(device)
-    print("[DEBUG] Model moved successfully to device.")
+    try:
+        # 清理内存
+        import gc
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            
+        # 逐步移动模型到设备
+        model.to(device)
+        print("[DEBUG] Model moved successfully to device.")
+    except RuntimeError as e:
+        if "CUDA out of memory" in str(e):
+            logger.error(f"GPU内存不足: {e}")
+            # 尝试使用CPU
+            logger.info("尝试使用CPU继续训练...")
+            device = torch.device("cpu")
+            args.device = "cpu"
+            args.fp16 = False  # 在CPU上禁用FP16
+            model.to(device)
+            print("[DEBUG] Model moved to CPU instead due to GPU memory limitations.")
+        else:
+            logger.error(f"移动模型到设备时出错: {e}")
+            sys.exit(1)  # 退出程序
+    except Exception as e:
+        logger.error(f"移动模型到设备时出错: {e}")
+        sys.exit(1)  # 退出程序
+    
     print("[DEBUG] Model loaded and moved to device.")
     
     # 计算可训练参数
@@ -300,83 +341,126 @@ def train(args):
 
         train_progress = tqdm(train_loader, desc=f"训练轮次 {epoch+1}")
         for batch_idx, batch in enumerate(train_progress):
-        # --- DEBUG START: Batch Info ---
             # 将数据移到设备
             pixel_values = batch["pixel_values"].to(device)
             labels = batch["labels"].to(device)
             emotion_indices = batch["emotion_indices"].to(device)
             # confidence_values = batch["confidence_values"].to(device) # 当前未使用
             attention_mask = batch["attention_mask"].to(device)  # 使用batch中的attention_mask
+            emotion_labels_multi_hot = batch["emotion_labels_multi_hot"].to(device)
 
-            print(f"[DEBUG] Batch {batch_idx + 1} - pixel_values shape: {pixel_values.shape}, device: {pixel_values.device}")
-            print(f"[DEBUG] Batch {batch_idx + 1} - labels shape: {labels.shape}, device: {labels.device}")
-            print(f"[DEBUG] Batch {batch_idx + 1} - emotion_indices shape: {emotion_indices.shape}, device: {emotion_indices.device}")
-            # Print multi-hot before moving to device for clarity if needed, otherwise use batch['emotion_labels_multi_hot'].to(device).shape
-            print(f"[DEBUG] Batch {batch_idx + 1} - emotion_labels_multi_hot shape: {batch['emotion_labels_multi_hot'].shape}, device: {batch['emotion_labels_multi_hot'].device}") 
-            print(f"[DEBUG] Batch {batch_idx + 1} - attention_mask shape: {attention_mask.shape}, device: {attention_mask.device}")
-            # --- DEBUG END: Tensor Info ---
+            # 减少过多的调试信息，只在第一个批次显示
+            if batch_idx == 0 and epoch == 0:
+                print(f"[DEBUG] First batch - pixel_values shape: {pixel_values.shape}, device: {pixel_values.device}")
+                print(f"[DEBUG] First batch - labels shape: {labels.shape}, device: {labels.device}")
+                print(f"[DEBUG] First batch - emotion_indices shape: {emotion_indices.shape}, device: {emotion_indices.device}")
+                print(f"[DEBUG] First batch - emotion_labels_multi_hot shape: {emotion_labels_multi_hot.shape}, device: {emotion_labels_multi_hot.device}")
+                print(f"[DEBUG] First batch - attention_mask shape: {attention_mask.shape}, device: {attention_mask.device}")
+
             # 清除梯度
             optimizer.zero_grad()
 
             # 使用混合精度训练
             with autocast(enabled=args.fp16):
-                # 前向传播
-                outputs = model(
-                    pixel_values=pixel_values,
-                    emotion_indices=emotion_indices, # 传递真实情感标签用于计算损失
-                    # confidence_values=confidence_values, # 当前未使用
-                    attention_mask=attention_mask,  # 传入注意力掩码
-                    input_ids=labels, # input_ids 用于生成
-                    labels=labels,    # labels 用于计算 caption loss
-                    emotion_loss_weight=args.emotion_loss_weight, # 传递损失权重
-                    emotion_labels_multi_hot=batch["emotion_labels_multi_hot"].to(device) # 传递多热情感标签
-                )
+                try:
+                    # 前向传播
+                    outputs = model(
+                        pixel_values=pixel_values,
+                        emotion_indices=emotion_indices, # 传递真实情感标签用于计算损失
+                        # confidence_values=confidence_values, # 当前未使用
+                        attention_mask=attention_mask,  # 传入注意力掩码
+                        input_ids=labels, # input_ids 用于生成
+                        labels=labels,    # labels 用于计算 caption loss
+                        emotion_loss_weight=args.emotion_loss_weight, # 传递损失权重
+                        emotion_labels_multi_hot=emotion_labels_multi_hot # 传递多热情感标签
+                    )
 
-                print(f"[DEBUG] Batch {batch_idx + 1} - Model forward completed.")
-                # 获取总损失和子损失 (如果存在)
-                loss = outputs.get("loss") # 总损失
-                caption_loss = outputs.get("caption_loss")
-                emotion_loss = outputs.get("emotion_loss")
+                    # 只在第一个批次记录前向传播完成
+                    if batch_idx == 0 and epoch == 0:
+                        print(f"[DEBUG] First batch - Model forward completed.")
+                    
+                    # 获取总损失和子损失 (如果存在)
+                    loss = outputs.get("loss") # 总损失
+                    caption_loss = outputs.get("caption_loss")
+                    emotion_loss = outputs.get("emotion_loss")
 
-                print(f"[DEBUG] Batch {batch_idx + 1} - Loss: {loss.item() if loss is not None else 'N/A'}, Caption Loss: {caption_loss if caption_loss is not None else 'N/A'}, Emotion Loss: {emotion_loss if emotion_loss is not None else 'N/A'}")
+                    # 只在第一个批次或出现异常值时记录损失
+                    if batch_idx == 0 and epoch == 0:
+                        print(f"[DEBUG] First batch - Loss: {loss.item() if loss is not None else 'N/A'}")
+                        if caption_loss is not None:
+                            print(f"[DEBUG] First batch - Caption Loss: {caption_loss}")
+                        if emotion_loss is not None:
+                            print(f"[DEBUG] First batch - Emotion Loss: {emotion_loss}")
+                    elif loss is not None and (torch.isnan(loss) or torch.isinf(loss)):
+                        print(f"[WARNING] Batch {batch_idx + 1} - Abnormal loss detected: {loss.item()}")
+                except Exception as e:
+                    logger.error(f"前向传播出错: {e}")
+                    # 如果是第一个批次，终止训练，否则跳过这个批次
+                    if batch_idx == 0 and epoch == 0:
+                        logger.error("第一个批次就失败，终止训练")
+                        sys.exit(1)
+                    else:
+                        logger.warning(f"跳过批次 {batch_idx+1}")
+                        continue
+
             # 只有在存在可训练的总损失时才进行反向传播
             if loss is not None and loss.requires_grad:
-                # 使用梯度缩放器进行反向传播
-                if args.fp16:
-                    scaler.scale(loss).backward()
-                    # 梯度裁剪
-                    scaler.unscale_(optimizer)
-                    torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
-                    # 更新参数
-                    scaler.step(optimizer)
-                    scaler.update()
-                else:
-                    print(f"[DEBUG] Batch {batch_idx + 1} - backward() and step() completed (FP16).")
-                    # 常规反向传播
-                    loss.backward()
-                    # 梯度裁剪
-                    torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
-                    # 更新参数
-                    optimizer.step()
+                try:
+                    # 使用梯度缩放器进行反向传播
+                    if args.fp16:
+                        scaler.scale(loss).backward()
+                        # 梯度裁剪
+                        scaler.unscale_(optimizer)
+                        torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
+                        # 更新参数
+                        scaler.step(optimizer)
+                        scaler.update()
+                    else:
+                        # 常规反向传播
+                        loss.backward()
+                        # 梯度裁剪
+                        torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
+                        # 更新参数
+                        optimizer.step()
 
-                    print(f"[DEBUG] Batch {batch_idx + 1} - backward() and step() completed.")
-                scheduler.step()
+                    # 只在第一个批次记录完成情况
+                    if batch_idx == 0 and epoch == 0:
+                        print(f"[DEBUG] First batch - backward() and step() completed.")
+                    
+                    scheduler.step()
 
-                # 更新训练损失统计 (仅当loss有效时)
-                train_loss += loss.item()
-                if caption_loss is not None:
-                    train_caption_loss += caption_loss # caption_loss 已经是 item()
-                if emotion_loss is not None:
-                    train_emotion_loss += emotion_loss # emotion_loss 已经是 item()
-                train_batches += 1
+                    # 更新训练损失统计 (仅当loss有效时)
+                    train_loss += loss.item()
+                    if caption_loss is not None:
+                        train_caption_loss += caption_loss # caption_loss 已经是 item()
+                    if emotion_loss is not None:
+                        train_emotion_loss += emotion_loss # emotion_loss 已经是 item()
+                    train_batches += 1
 
-                # 更新进度条显示子损失
-                log_dict = {"loss": f"{loss.item():.4f}"}
-                if caption_loss is not None:
-                    log_dict["cap_loss"] = f"{caption_loss:.4f}"
-                if emotion_loss is not None:
-                    log_dict["emo_loss"] = f"{emotion_loss:.4f}"
-                train_progress.set_postfix(log_dict)
+                    # 更新进度条显示子损失
+                    log_dict = {"loss": f"{loss.item():.4f}"}
+                    if caption_loss is not None:
+                        log_dict["cap_loss"] = f"{caption_loss:.4f}"
+                    if emotion_loss is not None:
+                        log_dict["emo_loss"] = f"{emotion_loss:.4f}"
+                    train_progress.set_postfix(log_dict)
+                except Exception as e:
+                    logger.error(f"反向传播或优化步骤出错: {e}")
+                    # 如果是OOM错误，尝试减小批次大小
+                    if "CUDA out of memory" in str(e) and args.device != "cpu":
+                        logger.error("GPU内存不足，尝试使用CPU继续训练")
+                        device = torch.device("cpu")
+                        args.device = "cpu"
+                        args.fp16 = False  # 在CPU上禁用FP16
+                        model.to(device)
+                        # 此轮中剩余的批次将使用CPU
+                        continue
+                    elif batch_idx == 0 and epoch == 0:
+                        logger.error("第一个批次就失败，终止训练")
+                        sys.exit(1)
+                    else:
+                        logger.warning(f"跳过批次 {batch_idx+1}")
+                        continue
             else:
                  # 如果 loss 为 None (例如冻结BLIP且没有情感标签)，跳过优化步骤
                  logger.debug("跳过优化步骤，因为没有可训练的损失。")
@@ -503,12 +587,12 @@ def main():
     parser.add_argument("--no-freeze-blip", action="store_true", help="是否不冻结BLIP基础模型")
     
     # 训练参数
-    parser.add_argument("--batch_size", type=int, default=2, help="批次大小")
+    parser.add_argument("--batch_size", type=int, default=1, help="批次大小")
     parser.add_argument("--lr", type=float, default=2e-5, help="学习率")
     parser.add_argument("--weight_decay", type=float, default=0.01, help="权重衰减")
     parser.add_argument("--epochs", type=int, default=3, help="训练轮次")
     parser.add_argument("--max_grad_norm", type=float, default=1.0, help="梯度裁剪阈值")
-    parser.add_argument("--num_workers", type=int, default=4, help="数据加载器的工作线程数")
+    parser.add_argument("--num_workers", type=int, default=0, help="数据加载器的工作线程数")
     parser.add_argument("--save_steps", type=int, default=0, help="多少步保存一次检查点，0表示不保存")
     parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu", help="训练设备")
     parser.add_argument("--fp16", action="store_true", default=False, help="是否使用半精度(FP16)训练")
