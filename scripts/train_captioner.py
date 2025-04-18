@@ -318,7 +318,6 @@ def train(args):
                 # 前向传播
                 outputs = model(
                     pixel_values=pixel_values,
-                print(f"[DEBUG] Batch {batch_idx + 1} - Calling model forward...")
                     emotion_indices=emotion_indices, # 传递真实情感标签用于计算损失
                     # confidence_values=confidence_values, # 当前未使用
                     attention_mask=attention_mask,  # 传入注意力掩码
