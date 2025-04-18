@@ -152,6 +152,7 @@ def train(args):
         freeze_blip=args.freeze_blip,
         proxy=args.proxy
     )
+    print("[DEBUG] Model instance created.")
     
     # 加载模型参数
     if args.load_model_path:
@@ -190,11 +191,15 @@ def train(args):
         model.load_state_dict(state_dict, strict=False)
         logger.info("模型参数加载完成。")
         
+    print("[DEBUG] Moving model to device...")
     model.to(device)
+    print("[DEBUG] Model moved successfully to device.")
     print("[DEBUG] Model loaded and moved to device.")
     
     # 计算可训练参数
+    print("[DEBUG] Calculating trainable params...")
     calculate_trainable_params(model)
+    print("[DEBUG] Trainable params calculated.")
     
     # 创建数据加载器
     logger.info("创建数据集...")
