@@ -588,6 +588,8 @@ def main():
     parser.add_argument("--freeze_blip", default=True, action="store_true", help="是否冻结BLIP基础模型")
     parser.add_argument("--no-freeze-blip", action="store_true", help="是否不冻结BLIP基础模型")
     
+    parser.add_argument("--load-base-model-only", action="store_true", default=False, help="Load only the base BLIP model for diagnosis")
+
     # 训练参数
     parser.add_argument("--batch_size", type=int, default=1, help="批次大小")
     parser.add_argument("--lr", type=float, default=2e-5, help="学习率")
