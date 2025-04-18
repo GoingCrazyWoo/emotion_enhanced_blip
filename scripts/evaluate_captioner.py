@@ -107,6 +107,8 @@ def evaluate_model(model, dataloader, device, processor, max_samples=None, outpu
     gts_dict = {}
     res_list = []
     annotation_id_counter = 0
+    img_id_map = {} # 创建从原始 ID 到临时整数 ID 的映射
+    temp_int_id_counter = 0 # 临时整数 ID 计数器
 
     for i, img_id_raw in enumerate(all_image_ids):
         # 确保 image_id 是 JSON 兼容的类型 (int or str)
@@ -116,7 +118,12 @@ def evaluate_model(model, dataloader, device, processor, max_samples=None, outpu
             img_id = img_id_raw
         # 确保是 int 或 str
         img_id = str(img_id) if not isinstance(img_id, (int, str)) else img_id
-        img_id_int = int(img_id) # COCO API 内部常用 int
+
+        # 获取或创建临时整数 ID
+        if img_id not in img_id_map:
+            img_id_map[img_id] = temp_int_id_counter
+            temp_int_id_counter += 1
+        img_id_int = img_id_map[img_id] # 使用映射后的整数 ID
 
         pred = all_preds[i]
         reference_captions = all_reference_captions[i] # 获取当前样本的所有参考描述
