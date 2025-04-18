@@ -473,12 +473,13 @@ def train(args):
                         continue
             else:
                 # 如果 loss 为 None (没有可训练的损失)，跳过优化步骤
+                pass
 
             # 定期保存检查点
-            if args.save_steps > 0 and train_batches > 0 and (train_batches % args.save_steps == 0):
-                checkpoint_path = os.path.join(args.output_dir, f"checkpoint_e{epoch+1}_b{train_batches}.pth")
-                torch.save(model.state_dict(), checkpoint_path)
-                logger.info(f"保存检查点到 {checkpoint_path}")
+        if args.save_steps > 0 and train_batches > 0 and (train_batches % args.save_steps == 0):
+            checkpoint_path = os.path.join(args.output_dir, f"checkpoint_e{epoch+1}_b{train_batches}.pth")
+            torch.save(model.state_dict(), checkpoint_path)
+            logger.info(f"保存检查点到 {checkpoint_path}")
         
         # 计算平均训练损失 (确保 train_batches > 0)
         avg_train_loss = train_loss / train_batches if train_batches > 0 else 0.0
