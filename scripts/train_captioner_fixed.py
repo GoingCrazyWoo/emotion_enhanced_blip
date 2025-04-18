@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 import torch.optim as optim
 from tqdm import tqdm
 from transformers import get_linear_schedule_with_warmup, BlipProcessor
-from torch.cuda.amp import autocast, GradScaler  # 导入 AMP 相关组件
+from torch.amp import autocast, GradScaler  # 使用新的torch.amp API
 from huggingface_hub import snapshot_download
 
 # 添加项目根目录到Python路径
@@ -142,7 +142,6 @@ def train(args):
     # 设置设备
     device = torch.device(args.device)
     logger.info(f"使用设备: {device}")
-    print(f"[DEBUG] Using device: {device}")
     
     # 检查是否可以使用FP16：在CPU上禁用FP16
     if device.type != "cuda":
@@ -160,7 +159,6 @@ def train(args):
             freeze_blip=args.freeze_blip,
             proxy=args.proxy
         )
-        print("[DEBUG] Model instance created.")
     except Exception as e:
         logger.error(f"创建模型实例失败: {e}")
         # 尝试使用更保守的设置
@@ -171,7 +169,6 @@ def train(args):
                 freeze_blip=True,  # 强制冻结BLIP
                 proxy=None  # 禁用代理
             )
-            print("[DEBUG] Model instance created with conservative settings.")
         except Exception as e:
             logger.error(f"使用保守设置创建模型也失败: {e}")
             sys.exit(1)  # 退出程序
@@ -187,7 +184,6 @@ def train(args):
             sys.exit(1) # 退出程序
     
     # 移动模型到设备
-    print("[DEBUG] Moving model to device...")
     try:
         # 清理内存
         import gc
@@ -197,7 +193,6 @@ def train(args):
             
         # 逐步移动模型到设备
         model.to(device)
-        print("[DEBUG] Model moved successfully to device.")
     except RuntimeError as e:
         if "CUDA out of memory" in str(e):
             logger.error(f"GPU内存不足: {e}")
@@ -215,12 +210,9 @@ def train(args):
         logger.error(f"移动模型到设备时出错: {e}")
         sys.exit(1)  # 退出程序
     
-    print("[DEBUG] Model loaded and moved to device.")
     
     # 计算可训练参数
-    print("[DEBUG] Calculating trainable params...")
     calculate_trainable_params(model)
-    print("[DEBUG] Trainable params calculated.")
     
     # 创建数据加载器
     logger.info("创建数据集...")
@@ -265,7 +257,6 @@ def train(args):
         num_workers=args.num_workers,
         pin_memory=True
     )
-    print("[DEBUG] Train and Val DataLoaders created.")
     
     # 设置优化器和学习率调度器
     optimizer = optim.AdamW(
@@ -282,9 +273,10 @@ def train(args):
     )
     
     # 初始化梯度缩放器用于混合精度训练
-    scaler = GradScaler(enabled=args.fp16)
+    device_type = 'cuda' if args.device == 'cuda' else 'cpu'
+    scaler = GradScaler(device_type, enabled=args.fp16)
     if args.fp16:
-        logger.info("启用半精度(FP16)训练")
+        logger.info(f"启用半精度(FP16)训练，设备类型: {device_type}")
     
     # 记录训练配置
     config = {
@@ -353,20 +345,13 @@ def train(args):
                     else:
                         logger.info("仅使用情感训练模式 (未找到标题数据)")
 
-            # 减少调试信息，只在首批次显示
-            if batch_idx == 0 and epoch == 0:
-                logger.info(f"首批次 - pixel_values shape: {pixel_values.shape}")
-                logger.info(f"首批次 - emotion_indices shape: {emotion_indices.shape}")
-                logger.info(f"首批次 - emotion_labels_multi_hot shape: {emotion_labels_multi_hot.shape}")
-                if labels is not None:
-                    logger.info(f"首批次 - labels shape: {labels.shape}")
-                    logger.info(f"首批次 - attention_mask shape: {attention_mask.shape}")
+            # 减少调试信息
 
             # 清除梯度
             optimizer.zero_grad()
 
             # 使用混合精度训练
-            with autocast(enabled=args.fp16):
+            with autocast(device_type, enabled=args.fp16):
                 try:
                     # 前向传播，根据模式决定是否使用标题生成
                     if args.emotion_only or labels is None:
@@ -410,14 +395,8 @@ def train(args):
                     caption_loss = outputs.get("caption_loss") 
                     emotion_loss = outputs.get("emotion_loss")
                 
-                    # 只在首批次或异常值时记录
-                    if batch_idx == 0 and epoch == 0:
-                        logger.info(f"首批次 - Loss: {loss.item() if loss is not None else 'N/A'}")
-                        if caption_loss is not None:
-                            logger.info(f"首批次 - Caption Loss: {caption_loss}")
-                        if emotion_loss is not None:
-                            logger.info(f"首批次 - Emotion Loss: {emotion_loss}")
-                    elif loss is not None and (torch.isnan(loss) or torch.isinf(loss)):
+                    # 只在异常值时记录
+                    if loss is not None and (torch.isnan(loss) or torch.isinf(loss)):
                         logger.warning(f"批次 {batch_idx + 1} - 检测到异常损失: {loss.item()}")
                 except Exception as e:
                     logger.error(f"前向传播错误: {e}")
@@ -494,7 +473,6 @@ def train(args):
                         continue
             else:
                 # 如果 loss 为 None (没有可训练的损失)，跳过优化步骤
-                logger.debug("跳过优化步骤，因为没有可训练的损失")
 
             # 定期保存检查点
             if args.save_steps > 0 and train_batches > 0 and (train_batches % args.save_steps == 0):
@@ -541,7 +519,7 @@ def train(args):
                     labels = None
 
                 # 验证时也使用混合精度，但不需要梯度
-                with autocast(enabled=args.fp16):
+                with autocast(device_type, enabled=args.fp16):
                     try:
                         # 前向传播，根据模式决定是否使用标题生成
                         if args.emotion_only or labels is None:

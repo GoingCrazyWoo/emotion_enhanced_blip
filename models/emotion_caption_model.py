@@ -280,13 +280,11 @@ class EmotionEnhancedBlipForCaption(nn.Module):
         try:
             logger.info(f"正在加载BLIP处理器: {blip_model_name}")
             self.processor = BlipProcessor.from_pretrained(blip_model_name, proxies=proxy)
-            print("[DEBUG] BlipProcessor loaded.")
             
             logger.info(f"正在加载BLIP模型: {blip_model_name}")
             # 使用try-except捕获可能的OOM或其他错误
             try:
                 self.blip = BlipForConditionalGeneration.from_pretrained(blip_model_name, proxies=proxy)
-                print("[DEBUG] BlipForConditionalGeneration loaded.")
             except Exception as e:
                 # 如果出现错误，尝试使用CPU加载然后再移动到设备
                 logger.warning(f"使用默认设备加载BLIP模型失败: {str(e)}")
@@ -303,7 +301,6 @@ class EmotionEnhancedBlipForCaption(nn.Module):
                     torch_dtype=torch.float32,  # 使用FP32而不是FP16
                     device_map="auto"  # 允许模型自动决定设备分配
                 )
-                print("[DEBUG] BlipForConditionalGeneration loaded with alternative settings.")
         except Exception as e:
             logger.error(f"加载BLIP模型或处理器失败: {str(e)}")
             raise RuntimeError(f"无法加载BLIP模型: {str(e)}")
@@ -313,7 +310,6 @@ class EmotionEnhancedBlipForCaption(nn.Module):
             logger.info("冻结BLIP模型参数")
             for param in self.blip.parameters():
                 param.requires_grad = False
-            print("[DEBUG] BLIP parameters frozen.")
                 
         # 情感编码器
         hidden_dim = self.blip.config.text_config.hidden_size
@@ -326,7 +322,6 @@ class EmotionEnhancedBlipForCaption(nn.Module):
             hidden_dim=hidden_dim,
             dropout=dropout
         )
-        print("[DEBUG] EmotionEncoder initialized.")
         
         # 情感特征适配层
         self.emotion_adapter = nn.Sequential(
@@ -335,28 +330,23 @@ class EmotionEnhancedBlipForCaption(nn.Module):
             nn.GELU(),
             nn.Dropout(dropout)
         )
-        print("[DEBUG] EmotionAdapter initialized.")
         
         # 情感控制门
         self.emotion_gate = nn.Sequential(
             nn.Linear(hidden_dim * 2, 1),
             nn.Sigmoid()
         )
-        print("[DEBUG] EmotionGate initialized.")
         
         # 情感投影层 (用于直接处理logits的情况)
         vocab_size = self.blip.config.text_config.vocab_size
         self.emotion_projector = nn.Linear(hidden_dim, vocab_size)
-        print("[DEBUG] EmotionProjector initialized.")
 
         # --- 新增：情感分类头 ---
         # 使用视觉模型的输出维度 (通常与文本模型相同)
         vision_hidden_dim = self.blip.config.vision_config.hidden_size
         self.emotion_classifier = nn.Linear(vision_hidden_dim, len(EMOTION_CATEGORIES))
         logger.info(f"添加情感分类头: Linear({vision_hidden_dim}, {len(EMOTION_CATEGORIES)})")
-        print("[DEBUG] EmotionClassifier initialized.")
         # --- 结束新增 ---
-        print("[DEBUG] EmotionEnhancedBlipForCaption __init__ finished.")
         
     def get_emotion_representation(
         self,
@@ -437,14 +427,12 @@ class EmotionEnhancedBlipForCaption(nn.Module):
         """
         前向传播
         """
-        print("[DEBUG] Entering EmotionEnhancedBlipForCaption forward method.")
         
         return_dict = return_dict if return_dict is not None else self.blip.config.use_return_dict
         
         try:
             # --- 1. 视觉特征提取和情感分类 ---
             # 提取视觉特征并进行情感分类
-            print("[DEBUG] Extracting visual features and performing emotion classification...")
             
             # 确保 vision_model 的梯度计算根据 freeze_blip 控制
             with torch.set_grad_enabled(not self.freeze_blip):
@@ -453,18 +441,14 @@ class EmotionEnhancedBlipForCaption(nn.Module):
             # 池化后的输出需要梯度，以便传递给可训练的 emotion_classifier
             image_embeds = vision_outputs.pooler_output # [batch_size, vision_hidden_dim]
             
-            # 情感分类 
+            # 情感分类
             emotion_logits = self.emotion_classifier(image_embeds) # [batch_size, num_emotions]
-            print(f"[DEBUG] emotion_logits shape: {emotion_logits.shape}, device: {emotion_logits.device}")
             
             # --- 2. 计算情感损失 (如果有真实标签) ---
             emotion_loss = None
             caption_loss = None
             loss = None
-            
-            print("[DEBUG] Processing emotion_labels_multi_hot...")
             if emotion_labels_multi_hot is not None:
-                print(f"[DEBUG] emotion_labels_multi_hot provided - shape: {emotion_labels_multi_hot.shape}, device: {emotion_labels_multi_hot.device}")
                 try:
                     # 使用BCE损失计算情感损失
                     emotion_loss = F.binary_cross_entropy_with_logits(
@@ -472,28 +456,24 @@ class EmotionEnhancedBlipForCaption(nn.Module):
                         emotion_labels_multi_hot.float(),
                         reduction="mean"
                     )
-                    print(f"[DEBUG] emotion_loss: {emotion_loss}")
                 except Exception as e:
-                    print(f"[ERROR] Error during emotion loss calculation: {e}")
+                    logger.error(f"Error during emotion loss calculation: {e}")
                     # 如果情感损失计算出错，设为0以避免训练中断
                     emotion_loss = torch.tensor(0.0, device=pixel_values.device)
             else:
-                print("[DEBUG] No emotion_labels_multi_hot provided, skipping emotion loss calculation")
+                pass # No emotion_labels_multi_hot provided, skipping emotion loss calculation
             
             # --- 3. 获取情感表示 ---
-            print("[DEBUG] Getting emotion representation...")
             emotion_features = None
             try:
                 if emotion_indices is not None and confidence_values is not None:
                     # 使用真实情感标签获取情感表示
-                    print("[DEBUG] Using provided emotion indices and confidence values")
                     emotion_features = self.emotion_encoder(
                         emotion_indices=emotion_indices,
                         confidence_values=confidence_values
                     )
                 else:
                     # 从vision_model预测情感，然后获取情感表示
-                    print("[DEBUG] No emotion indices provided, extracting emotions from image")
                     predicted_emotion_indices, predicted_confidence_values = self.extract_emotions(
                         pixel_values=pixel_values
                     )
@@ -501,84 +481,82 @@ class EmotionEnhancedBlipForCaption(nn.Module):
                         emotion_indices=predicted_emotion_indices,
                         confidence_values=predicted_confidence_values
                     )
-                
-                print(f"[DEBUG] emotion_features shape: {emotion_features.shape if emotion_features is not None else 'None'}")
             except Exception as e:
-                print(f"[ERROR] Error during emotion representation extraction: {e}")
+                logger.error(f"Error during emotion representation extraction: {e}")
                 # 如果情感表示提取出错，用零向量替代
                 batch_size = pixel_values.size(0)
                 hidden_dim = self.blip.config.text_config.hidden_size
                 emotion_features = torch.zeros(batch_size, hidden_dim, device=pixel_values.device)
             
             # --- 4. 使用BLIP计算caption loss (如果提供了labels) ---
-            print("[DEBUG] Computing caption loss (if labels provided)...")
             if labels is not None:
                 try:
-                    print(f"[DEBUG] labels provided - shape: {labels.shape}, device: {labels.device}")
                     # 使用自定义情感适配层处理情感特征
                     emotion_adapter_output = self.emotion_adapter(emotion_features)
                     
                     # 使用门控机制控制情感对文本生成的影响
                     emotion_gate_weight = self.emotion_gate(emotion_features)
                     
-                    # 如果提供了attention_mask，则调用BLIP模型计算损失
-                    with torch.set_grad_enabled(not self.freeze_blip):
-                        blip_outputs = self.blip(
-                            pixel_values=pixel_values, # 传递像素值，BLIP内部处理视觉部分
-                            input_ids=input_ids,
-                            attention_mask=attention_mask,
-                            labels=labels,
-                            return_dict=True
-                        )
+                    # 直接使用BLIP模型计算损失，避免连接情感特征导致的形状不匹配问题
+                    try:
+                        with torch.set_grad_enabled(not self.freeze_blip):
+                            blip_outputs = self.blip(
+                                pixel_values=pixel_values, # 传递像素值，BLIP内部处理视觉部分
+                                input_ids=input_ids,
+                                attention_mask=attention_mask,
+                                labels=labels,
+                                return_dict=True
+                            )
                     
-                    # 正常情况下，BLIP已经计算好caption_loss
-                    caption_loss = blip_outputs.loss.item() # 转换为标量，避免梯度问题
-                    print(f"[DEBUG] caption_loss from BLIP: {caption_loss}")
-                    
+                    # 使用BLIP计算的损失，但保持梯度连接
+                    caption_loss = blip_outputs.loss
+                
                     # 如果有emotion_loss，计算总损失
                     if emotion_loss is not None:
                         loss = caption_loss + emotion_loss_weight * emotion_loss
-                        print(f"[DEBUG] total_loss (combined): {loss}")
                     else:
                         loss = caption_loss
-                        print(f"[DEBUG] total_loss (caption only): {loss}")
-                except Exception as e:
-                    print(f"[ERROR] Error during caption loss calculation: {e}")
-                    # 如果caption损失计算出错，检查是否有情感损失可用
-                    if emotion_loss is not None:
-                        loss = emotion_loss_weight * emotion_loss
-                        print(f"[DEBUG] Using only emotion_loss as total_loss: {loss}")
+                except RuntimeError as e:
+                    if "mat1 and mat2 shapes cannot be multiplied" in str(e):
+                        logger.warning(f"Matrix shape mismatch in BLIP model: {e}")
+                        caption_loss = torch.tensor(0.0, device=pixel_values.device, requires_grad=True)
+                        
+                        # 如果有emotion_loss，仍然可以用它作为总损失
+                        if emotion_loss is not None:
+                            loss = emotion_loss_weight * emotion_loss
+                        else:
+                            loss = caption_loss
                     else:
-                        # 如果都没有可用损失，使用dummy loss以避免训练失败
-                        loss = torch.tensor(0.0, device=pixel_values.device)
-                        print("[DEBUG] Using dummy loss (0.0) as total_loss")
-            else:
-                print("[DEBUG] No labels provided, skipping caption loss calculation")
-                # 处理预测/推理情况但确保有情感损失时能正确设置总损失
+                        raise
+            except Exception as e:
+                logger.error(f"Error during caption loss calculation: {e}")
+                # 如果caption损失计算出错，检查是否有情感损失可用
                 if emotion_loss is not None:
-                    # 当没有标题标签但有情感损失时，将情感损失作为总损失
                     loss = emotion_loss_weight * emotion_loss
-                    print(f"[DEBUG] total_loss (emotion only): {loss}")
                 else:
-                    # 如果没有任何损失，使用dummy loss以避免训练失败
+                    # 如果都没有可用损失，使用dummy loss以避免训练失败
                     loss = torch.tensor(0.0, device=pixel_values.device)
-                    print("[DEBUG] Using dummy loss (0.0) as total_loss")
-                
-            print(f"[DEBUG] total_loss: {loss if loss is not None else 'N/A'}")
+        else:
+            # 处理预测/推理情况但确保有情感损失时能正确设置总损失
+            if emotion_loss is not None:
+                # 当没有标题标签但有情感损失时，将情感损失作为总损失
+                loss = emotion_loss_weight * emotion_loss
+            else:
+                # 如果没有任何损失，使用dummy loss以避免训练失败
+                loss = torch.tensor(0.0, device=pixel_values.device)
             
-            # 返回结果字典
-            return_values = {
+        # 返回结果字典
+        return_values = {
                 "loss": loss,
                 "emotion_logits": emotion_logits,
                 "emotion_loss": emotion_loss,
                 "caption_loss": caption_loss
             }
             
-            print("[DEBUG] Forward pass completed, returning results")
             return return_values
         
         except Exception as e:
-            print(f"[ERROR] Unexpected error in forward method: {e}")
+            logger.error(f"Unexpected error in forward method: {e}")
             import traceback
             traceback.print_exc()
             
