@@ -244,150 +244,138 @@ class NewYorkerCaptionDataset(Dataset):
         """获取数据集样本"""
         try:
             sample = self.dataset[idx]
-            
-            # 使用get方法安全地获取instance_id
             instance_id = sample.get("instance_id", f"unknown_{idx}")
-            
-            # 获取图像
             image = self.get_image(idx)
-            
-            # 获取情感
             emotion_indices, confidence_values = self.get_emotions(instance_id)
-            
-            # 获取参考描述（来自数据集的标签或解释）
-            reference_titles = []
-            if "title" in sample and sample["title"]:
-                reference_titles.append(sample["title"])
-            if "explanation" in sample and sample["explanation"]:
-                reference_titles.append(sample["explanation"])
-            
-            # 如果预处理标注中有说明，优先使用
+
+            # 获取真实标题和描述
+            ground_truth_title = None
+            reference_description = None # 使用更明确的变量名
+
+            # 优先从预处理标注中获取标题和描述
             if instance_id in self.annotations:
                 annotation = self.annotations[instance_id]
-                if "explanation" in annotation and annotation["explanation"]:
-                    if not reference_titles:  # 只在没有找到参考描述时使用
-                        reference_titles.append(annotation["explanation"])
-            
-            # 处理图像为模型输入
+                ground_truth_title = annotation.get("title") # 尝试从标注获取标题
+                reference_description = annotation.get("explanation") # 尝试从标注获取描述
+
+            # 如果标注中没有，尝试从原始数据集中获取
+            if ground_truth_title is None and "title" in sample and sample["title"]:
+                ground_truth_title = sample["title"]
+            if reference_description is None and "explanation" in sample and sample["explanation"]:
+                reference_description = sample["explanation"]
+
+            # 如果两者都没有，设置默认值
+            if ground_truth_title is None:
+                ground_truth_title = "" # 设为空字符串而不是None，方便后续处理
+                logger.warning(f"样本 {instance_id} 缺少标题。")
+            if reference_description is None:
+                 reference_description = "" # 设为空字符串
+
+            # 处理图像
             try:
                 pixel_values = self.processor(
-                    images=image, 
+                    images=image,
                     return_tensors="pt"
                 ).pixel_values.squeeze()
             except Exception as e:
                 logger.error(f"处理图像失败 (idx={idx}): {e}")
-                # 返回零张量
                 pixel_values = torch.zeros((3, 384, 384))
-            
+
             result = {
                 "id": instance_id,
                 "pixel_values": pixel_values,
                 "emotion_indices": emotion_indices,
                 "confidence_values": confidence_values,
-                "reference_captions": reference_titles,
+                "ground_truth_title": ground_truth_title, # 添加真实标题
+                "reference_description": reference_description, # 添加参考描述
             }
-            
-            # 如果有参考描述，处理为文本输入
-            if reference_titles:
-                # 使用第一个参考描述作为目标文本
-                target_text = reference_titles[0]
-                
-                # 处理文本为模型输入
-                try:
-                    target_encoding = self.processor(
-                        text=target_text,
-                        padding="max_length",
-                        truncation=True,
-                        max_length=self.max_target_length,
-                        return_tensors="pt"
-                    )
-                    
-                    # 解码器输入IDs和标签
-                    result["labels"] = target_encoding.input_ids.squeeze()
-                except Exception as e:
-                    logger.error(f"处理文本失败 (idx={idx}): {e}")
-                
+
+            # 处理目标文本（用于训练，评估时可能不需要）
+            # 决定使用标题还是描述作为训练目标，这里我们假设评估时不需要labels
+            # target_text = ground_truth_title # 或者 reference_description
+            # if target_text:
+            #     try:
+            #         target_encoding = self.processor(
+            #             text=target_text,
+            #             padding="max_length",
+            #             truncation=True,
+            #             max_length=self.max_target_length,
+            #             return_tensors="pt"
+            #         )
+            #         result["labels"] = target_encoding.input_ids.squeeze()
+            #     except Exception as e:
+            #         logger.error(f"处理文本失败 (idx={idx}): {e}")
+
             return result
         except Exception as e:
             logger.error(f"处理样本失败 (idx={idx}): {str(e)}")
-            # 返回一个空样本
             return {
                 "id": f"error_{idx}",
                 "pixel_values": torch.zeros((3, 384, 384)),
                 "emotion_indices": [],
                 "confidence_values": [],
-                "reference_captions": [],
+                "ground_truth_title": "", # 确保返回空字符串
+                "reference_description": "", # 确保返回空字符串
             }
 
 
 def optimized_collate_fn(batch):
     """为优化数据集定制的数据批次整理函数"""
-    # 过滤掉空样本
     batch = [item for item in batch if item is not None and "pixel_values" in item]
-    
-    # 如果批次为空，返回默认批次
+
     if not batch:
         return {
             "pixel_values": torch.zeros((1, 3, 384, 384)),
-            "labels": torch.zeros((1, 10), dtype=torch.long),
+            "labels": torch.zeros((1, 10), dtype=torch.long), # 保留以防训练时需要
             "emotion_indices": torch.zeros((1, 1), dtype=torch.long),
             "confidence_values": torch.zeros((1, 1), dtype=torch.float),
-            "ids": ["empty_batch"], # 添加默认 ID
-            "reference_captions": [[]] # 添加默认参考描述
+            "ids": ["empty_batch"],
+            "ground_truth_titles": [""], # 修改为 titles
+            "reference_descriptions": [[]] # 修改为 descriptions
         }
-    
-    # 提取所有批次的项目
+
     pixel_values = torch.stack([item["pixel_values"] for item in batch])
-    
-    # 准备情感标签
+
     max_emotions = max(len(item.get("emotion_indices", [])) for item in batch)
-    if max_emotions == 0:
-        max_emotions = 1  # 确保至少有一个情感
-        
+    if max_emotions == 0: max_emotions = 1
     emotion_indices = torch.full((len(batch), max_emotions), fill_value=-1, dtype=torch.long)
     confidence_values = torch.zeros((len(batch), max_emotions), dtype=torch.float)
-    
-    # 准备标签（如果有）
+
+    # 保留标签处理逻辑，以防训练时需要
     has_labels = all("labels" in item for item in batch)
+    labels = None
     if has_labels:
         max_label_len = max(item["labels"].size(0) for item in batch if "labels" in item)
         labels = torch.full((len(batch), max_label_len), fill_value=-100, dtype=torch.long)
-    
+
     ids = []
-    reference_captions_list = [] # 新增：用于收集参考描述
-    
-    # 填充批次中的每个项目
+    ground_truth_titles_list = [] # 用于收集真实标题
+    reference_descriptions_list = [] # 用于收集参考描述
+
     for i, item in enumerate(batch):
-        # 处理情感标签
         if "emotion_indices" in item and len(item["emotion_indices"]) > 0:
             emotion_len = min(len(item["emotion_indices"]), max_emotions)
             emotion_indices[i, :emotion_len] = torch.tensor(item["emotion_indices"][:emotion_len], dtype=torch.long)
             confidence_values[i, :emotion_len] = torch.tensor(item["confidence_values"][:emotion_len], dtype=torch.float)
-        
-        # 处理标签（如果有）
+
         if has_labels and "labels" in item:
             seq_len = item["labels"].size(0)
             labels[i, :seq_len] = item["labels"]
-        
-        # 收集ID
-        if "id" in item:
-            ids.append(item["id"])
-            
-        # 新增：收集参考描述
-        if "reference_captions" in item:
-            reference_captions_list.append(item["reference_captions"])
-        else:
-            reference_captions_list.append([]) # 如果某个样本没有，添加空列表以保持对齐
-    
+
+        ids.append(item.get("id", f"unknown_{i}"))
+        ground_truth_titles_list.append(item.get("ground_truth_title", "")) # 收集真实标题
+        reference_descriptions_list.append(item.get("reference_description", "")) # 收集参考描述
+
     result = {
         "pixel_values": pixel_values,
         "emotion_indices": emotion_indices,
         "confidence_values": confidence_values,
         "ids": ids,
-        "reference_captions": reference_captions_list # 新增：将收集到的列表添加到结果字典
+        "ground_truth_titles": ground_truth_titles_list, # 返回真实标题列表
+        "reference_descriptions": reference_descriptions_list # 返回参考描述列表
     }
-    
+
     if has_labels:
         result["labels"] = labels
-        
+
     return result
