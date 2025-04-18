@@ -101,8 +101,7 @@ def generate_descriptions(args):
                 # 生成描述
                 output_ids = model.generate(
                     pixel_values=pixel_values,
-                    emotion_indices=emotion_indices_tensor,
-                    confidence_values=confidence_values_tensor,
+                    # emotion_indices 和 confidence_values 不再传递给 generate
                     max_length=args.max_length,
                     num_beams=args.num_beams,
                     min_length=args.min_length,

@@ -437,87 +437,44 @@ class EmotionEnhancedBlipForCaption(nn.Module):
         **generate_kwargs
     ) -> torch.LongTensor:
         """
-        生成描述文本
+        生成描述文本 (移除了情感注入钩子以保持与训练一致)
         
         参数:
             pixel_values: 图像特征，形状为 [batch_size, 3, height, width]
-            emotion_indices: 情感索引，形状为 [batch_size, max_emotions]
-            confidence_values: 情感置信度，形状为 [batch_size, max_emotions]
-            generate_kwargs: 生成参数
+            emotion_indices: (可选，不再使用) 情感索引
+            confidence_values: (可选，不再使用) 情感置信度
+            input_ids: (可选) 输入ID，用于条件生成
+            attention_mask: (可选) 注意力掩码
+            generate_kwargs: 传递给 `transformers.generation_utils.GenerationMixin.generate` 的参数
             
         返回:
-            captions: 生成的描述文本
+            captions: 生成的描述文本 (token IDs)
         """
-        # 处理情感输入
-        if emotion_indices is None or confidence_values is None:
-            # 如果未提供情感，使用默认值（幽默和讽刺）
-            batch_size = pixel_values.size(0)
-            emotion_indices = torch.tensor([[2, 3, -1]]).repeat(batch_size, 1).to(pixel_values.device)
-            confidence_values = torch.tensor([[0.8, 0.5, 0.0]]).repeat(batch_size, 1).to(pixel_values.device)
+        # 情感特征不再在此方法中注入
         
-        # 获取情感特征
-        emotion_features = self.get_emotion_representation(emotion_indices, confidence_values)
-        
-        # 设置生成参数
+        # 设置生成参数 (如果未提供)
         if "max_length" not in generate_kwargs:
             generate_kwargs["max_length"] = 100
-        
         if "num_beams" not in generate_kwargs:
             generate_kwargs["num_beams"] = 5
-            
         if "min_length" not in generate_kwargs:
             generate_kwargs["min_length"] = 10
-            
         if "do_sample" not in generate_kwargs:
-            generate_kwargs["do_sample"] = True
-            
+            generate_kwargs["do_sample"] = True # 默认进行采样以增加多样性
         if "temperature" not in generate_kwargs:
             generate_kwargs["temperature"] = 0.7
-            
         if "top_p" not in generate_kwargs:
             generate_kwargs["top_p"] = 0.9
-        
-        # 定义用于情感增强的钩子函数
-        handles = []
-        
-        # 尝试在视觉模型之后注入情感特征
-        def vision_model_hook(module, input, output):
-            # 获取原始特征
-            image_embeds = output.last_hidden_state
             
-            # 转换情感特征的尺寸以匹配图像特征
-            expanded_emotion = emotion_features.unsqueeze(1).expand(-1, image_embeds.size(1), -1)
-            
-            # 情感融合门控
-            gate = self.emotion_gate(
-                torch.cat([image_embeds, expanded_emotion], dim=-1)
-            )
-            
-            # 应用情感增强
-            enhanced_image_embeds = image_embeds + gate * expanded_emotion
-            
-            # 替换输出的特征
-            output.last_hidden_state = enhanced_image_embeds
-            
-            return output
-        
-        # 注册钩子以在前向传播过程中修改特征
-        handle = self.blip_model.vision_model.register_forward_hook(
-            lambda module, input, output: vision_model_hook(module, input, output)
+        # 直接调用原始 BLIP 模型的 generate 方法
+        # 不再使用钩子注入情感特征
+        outputs = self.blip_model.generate(
+            pixel_values=pixel_values,
+            input_ids=input_ids,
+            attention_mask=attention_mask,
+            **generate_kwargs
         )
-        handles.append(handle)
         
-        try:
-            # 调用BLIP原生的generate方法
-            outputs = self.blip_model.generate(
-                pixel_values=pixel_values,
-                **generate_kwargs
-            )
-        finally:
-            # 移除所有钩子，确保不会影响后续的调用
-            for handle in handles:
-                handle.remove()
-            
         return outputs
     
     def generate_caption(
