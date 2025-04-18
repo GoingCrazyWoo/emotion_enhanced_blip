@@ -3,7 +3,7 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
-from emotion_enhanced_blip.models.rotary import apply_rotary_emb
+from .rotary import apply_rotary_emb # 使用相对导入
 
 
 class RMSNorm(nn.Module):
