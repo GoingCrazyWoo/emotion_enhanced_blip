@@ -127,17 +127,43 @@ def train(args):
         proxy=args.proxy
     )
     
-    if not os.path.exists("../snapshots/model_state_dict.pth"):
-        snapshot_download(
-            repo_id="Opps/blip_base_newyorker",
-            local_dir="../snapshots",
-            local_dir_use_symlinks=False,
-            allow_patterns="blip_state_dict.pth"
-        )
-    
-    state_dict = torch.load("../snapshots/blip_state_dict.pth")
-    
-    model.load_state_dict(state_dict, strict=False)
+    # 加载模型参数
+    if args.load_model_path:
+        if os.path.exists(args.load_model_path):
+            logger.info(f"从本地加载模型参数: {args.load_model_path}")
+            state_dict = torch.load(args.load_model_path, map_location=device)
+            model.load_state_dict(state_dict, strict=False)
+        else:
+            logger.error(f"错误: 本地模型参数文件不存在: {args.load_model_path}")
+            sys.exit(1) # 退出程序
+    else:
+        logger.info("未指定本地模型路径，从Hugging Face下载模型...")
+        # 检查并下载模型快照
+        snapshot_dir = "../snapshots"
+        snapshot_file = "blip_state_dict.pth"
+        snapshot_path = os.path.join(snapshot_dir, snapshot_file)
+        
+        if not os.path.exists(snapshot_path):
+            logger.info(f"下载模型快照到 {snapshot_dir}...")
+            try:
+                snapshot_download(
+                    repo_id="Opps/blip_base_newyorker",
+                    local_dir=snapshot_dir,
+                    local_dir_use_symlinks=False,
+                    allow_patterns=snapshot_file,
+                    proxy=args.proxy # 使用代理进行下载
+                )
+                logger.info("模型快照下载完成。")
+            except Exception as e:
+                logger.error(f"下载模型快照失败: {e}")
+                sys.exit(1) # 下载失败则退出
+        else:
+            logger.info(f"找到现有模型快照: {snapshot_path}")
+            
+        state_dict = torch.load(snapshot_path, map_location=device)
+        model.load_state_dict(state_dict, strict=False)
+        logger.info("模型参数加载完成。")
+        
     model.to(device)
     
     # 计算可训练参数
@@ -379,6 +405,7 @@ def main():
     parser.add_argument("--num_samples", type=int, default=None, help="用于调试的最大样本数")
     
     # 模型参数
+    parser.add_argument("--load_model_path", type=str, default=None, help="从本地加载模型参数的路径 (.pth 文件)")
     parser.add_argument("--blip_model", type=str, default="Salesforce/blip-image-captioning-base", help="BLIP模型名称")
     parser.add_argument("--max_length", type=int, default=100, help="文本最大长度")
     parser.add_argument("--freeze_blip", default=True, action="store_true", help="是否冻结BLIP基础模型")
