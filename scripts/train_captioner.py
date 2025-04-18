@@ -151,8 +151,7 @@ def train(args):
         model = EmotionEnhancedBlipForCaption(
             blip_model_name=args.blip_model,
             freeze_blip=args.freeze_blip,
-            proxy=args.proxy,
-            load_base_model_only=args.load_base_model_only # 添加参数
+            proxy=args.proxy
         )
         print("[DEBUG] Model instance created.")
     except Exception as e:
@@ -163,8 +162,7 @@ def train(args):
             model = EmotionEnhancedBlipForCaption(
                 blip_model_name=args.blip_model,
                 freeze_blip=True,  # 强制冻结BLIP
-                proxy=None,  # 禁用代理
-                load_base_model_only=args.load_base_model_only # 添加参数
+                proxy=None  # 禁用代理
             )
             print("[DEBUG] Model instance created with conservative settings.")
         except Exception as e:
@@ -588,8 +586,6 @@ def main():
     parser.add_argument("--freeze_blip", default=True, action="store_true", help="是否冻结BLIP基础模型")
     parser.add_argument("--no-freeze-blip", action="store_true", help="是否不冻结BLIP基础模型")
     
-    parser.add_argument("--load-base-model-only", action="store_true", default=False, help="Load only the base BLIP model for diagnosis")
-
     # 训练参数
     parser.add_argument("--batch_size", type=int, default=1, help="批次大小")
     parser.add_argument("--lr", type=float, default=2e-5, help="学习率")
