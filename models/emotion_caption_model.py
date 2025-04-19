@@ -498,15 +498,14 @@ class EmotionEnhancedBlipForCaption(nn.Module):
                     emotion_gate_weight = self.emotion_gate(emotion_features)
                     
                     # 直接使用BLIP模型计算损失，避免连接情感特征导致的形状不匹配问题
-                    try:
-                        with torch.set_grad_enabled(not self.freeze_blip):
-                            blip_outputs = self.blip(
-                                pixel_values=pixel_values, # 传递像素值，BLIP内部处理视觉部分
-                                input_ids=input_ids,
-                                attention_mask=attention_mask,
-                                labels=labels,
-                                return_dict=True
-                            )
+                    with torch.set_grad_enabled(not self.freeze_blip):
+                        blip_outputs = self.blip(
+                            pixel_values=pixel_values, # 传递像素值，BLIP内部处理视觉部分
+                            input_ids=input_ids,
+                            attention_mask=attention_mask,
+                            labels=labels,
+                            return_dict=True
+                        )
                     
                     # 使用BLIP计算的损失，但保持梯度连接
                     caption_loss = blip_outputs.loss
@@ -520,7 +519,7 @@ class EmotionEnhancedBlipForCaption(nn.Module):
                     if "mat1 and mat2 shapes cannot be multiplied" in str(e):
                         logger.warning(f"Matrix shape mismatch in BLIP model: {e}")
                         caption_loss = torch.tensor(0.0, device=pixel_values.device, requires_grad=True)
-                        
+
                         # 如果有emotion_loss，仍然可以用它作为总损失
                         if emotion_loss is not None:
                             loss = emotion_loss_weight * emotion_loss
@@ -528,45 +527,37 @@ class EmotionEnhancedBlipForCaption(nn.Module):
                             loss = caption_loss
                     else:
                         raise
-            except Exception as e:
-                logger.error(f"Error during caption loss calculation: {e}")
-                # 如果caption损失计算出错，检查是否有情感损失可用
+                except Exception as e:
+                    logger.error(f"Error during caption loss calculation: {e}")
+                    # 如果caption损失计算出错，检查是否有情感损失可用
+                    if emotion_loss is not None:
+                        loss = emotion_loss_weight * emotion_loss
+                    else:
+                        # 如果都没有可用损失，使用dummy loss以避免训练失败
+                        loss = torch.tensor(0.0, device=pixel_values.device)
+    else:
+        # 处理预测/推理情况但确保有情感损失时能正确设置总损失
                 if emotion_loss is not None:
+                    # 当没有标题标签但有情感损失时，将情感损失作为总损失
                     loss = emotion_loss_weight * emotion_loss
                 else:
-                    # 如果都没有可用损失，使用dummy loss以避免训练失败
+                    # 如果没有任何损失，使用dummy loss以避免训练失败
                     loss = torch.tensor(0.0, device=pixel_values.device)
-        else:
-            # 处理预测/推理情况但确保有情感损失时能正确设置总损失
-            if emotion_loss is not None:
-                # 当没有标题标签但有情感损失时，将情感损失作为总损失
-                loss = emotion_loss_weight * emotion_loss
-            else:
-                # 如果没有任何损失，使用dummy loss以避免训练失败
-                loss = torch.tensor(0.0, device=pixel_values.device)
-            
-        # 返回结果字典
-        return_values = {
-                "loss": loss,
-                "emotion_logits": emotion_logits,
-                "emotion_loss": emotion_loss,
-                "caption_loss": caption_loss
-            }
-            
-            return return_values
-        
-        except Exception as e:
-            logger.error(f"Unexpected error in forward method: {e}")
-            import traceback
-            traceback.print_exc()
-            
-            # 返回最小必要的结果，避免整个训练崩溃
-            return {
-                "loss": None,
-                "emotion_logits": emotion_logits if 'emotion_logits' in locals() else None,
-                "emotion_loss": None,
-                "caption_loss": None
-            }
+
+    # 返回结果字典
+    return_values = {
+            "loss": loss,
+            "emotion_logits": emotion_logits,
+            "emotion_loss": emotion_loss,
+            "caption_loss": caption_loss
+        }
+
+return return_values
+
+except Exception as e:
+        logger.error(f"Unexpected error in forward method: {e}")
+        import traceback
+        traceback.print_exc()
     
     def generate(
         self,
