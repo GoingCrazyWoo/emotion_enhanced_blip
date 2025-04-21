@@ -245,7 +245,7 @@ class NewYorkerCaptionDataset(Dataset):
         try:
             sample = self.dataset[idx]
             instance_id = sample.get("instance_id", f"unknown_{idx}")
-            print(f"[DEBUG] Processing sample idx: {idx}, ID: {instance_id}")
+            # print(f"[DEBUG] Processing sample idx: {idx}, ID: {instance_id}")
             image = self.get_image(idx)
             emotion_indices, confidence_values = self.get_emotions(instance_id)
 

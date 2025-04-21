@@ -1,0 +1,13 @@
+setup.py
+data/__init__.py
+data/newyorker_dataset.py
+emotion_enhanced_blip.egg-info/PKG-INFO
+emotion_enhanced_blip.egg-info/SOURCES.txt
+emotion_enhanced_blip.egg-info/dependency_links.txt
+emotion_enhanced_blip.egg-info/top_level.txt
+models/__init__.py
+models/emotion_caption_model.py
+models/multihead_diffattn.py
+models/rotary.py
+utils/__init__.py
+utils/emotion_utils.py

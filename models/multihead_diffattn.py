@@ -99,9 +99,15 @@ class MultiheadDiffAttn(nn.Module):
         q = q.view(bsz, tgt_len, 2 * self.num_heads, self.head_dim)
         k = k.view(bsz, src_len, 2 * self.num_kv_heads, self.head_dim)
         v = v.view(bsz, src_len, self.num_kv_heads, 2 * self.head_dim)
+        # Ensure cos and sin in rel_pos have the same dtype as q
+        cos, sin = rel_pos
+        if cos.dtype != q.dtype:
+            cos = cos.to(q.dtype)
+            sin = sin.to(q.dtype)
+        rel_pos_casted = (cos, sin)
 
-        q = apply_rotary_emb(q, *rel_pos, interleaved=True)
-        k = apply_rotary_emb(k, *rel_pos, interleaved=True)
+        q = apply_rotary_emb(q, *rel_pos_casted, interleaved=True)
+        k = apply_rotary_emb(k, *rel_pos_casted, interleaved=True)
 
         offset = src_len - tgt_len
         q = q.transpose(1, 2)

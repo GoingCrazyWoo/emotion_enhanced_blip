@@ -14,7 +14,7 @@ import argparse
 from tqdm import tqdm
 
 # 添加项目根目录到系统路径
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+#sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 # 导入模型和必要的工具
 from models.emotion_caption_model import EmotionEnhancedBlipForCaption
@@ -104,10 +104,11 @@ def main():
                 break
                 
             # 获取批次数据
+            #print(batch)
             pixel_values = batch["pixel_values"].to(device)
             emotion_indices = batch["emotion_indices"].to(device)
             confidence_values = batch["confidence_values"].to(device)
-            instance_ids = batch["instance_ids"]
+            instance_ids = batch["ids"]
             
             # 原始标注
             labels = batch["labels"].to(device)

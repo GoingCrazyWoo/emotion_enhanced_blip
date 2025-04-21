@@ -9,6 +9,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-scripts/output/
+scripts/output/*
+output/
 annotations_copy/
 scripts/test_val_labels.py

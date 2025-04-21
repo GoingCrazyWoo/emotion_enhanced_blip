@@ -373,12 +373,13 @@ class RotaryEmbedding(torch.nn.Module):
             cos: 余弦值张量，形状为 [seq_len, dim/2]
             sin: 正弦值张量，形状为 [seq_len, dim/2]
         """
-        # 确保cos和sin在正确的设备上
+        # 确保cos和sin在正确的设备上且数据类型与输入匹配
         device = x.device
+        dtype = x.dtype
         
-        if self.cos_cached.device != device:
-            self.cos_cached = self.cos_cached.to(device)
-            self.sin_cached = self.sin_cached.to(device)
+        # 强制转换 cos_cached 和 sin_cached 到与输入相同的设备和数据类型
+        self.cos_cached = self.cos_cached.to(device=device, dtype=dtype)
+        self.sin_cached = self.sin_cached.to(device=device, dtype=dtype)
             
         # 返回正余弦值供注意力层使用
         return self.cos_cached, self.sin_cached
@@ -397,6 +398,12 @@ class RotaryEmbedding(torch.nn.Module):
         """
         # 获取或计算cos和sin
         cos, sin = self.forward(q)
+        
+        # 确保cos和sin的数据类型与q和k匹配
+        # 这样做可以避免在fp16训练时出现数据类型不匹配的问题
+        if cos.dtype != q.dtype:
+            cos = cos.to(dtype=q.dtype)
+            sin = sin.to(dtype=q.dtype)
         
         # 应用旋转位置编码
         q_rot = apply_rotary_emb(

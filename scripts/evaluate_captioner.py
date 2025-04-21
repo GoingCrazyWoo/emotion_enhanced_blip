@@ -294,7 +294,7 @@ def evaluate_model(model, dataloader, device, processor, max_samples=None, outpu
 
 def main():
     parser = argparse.ArgumentParser(description="评估 Emotion Enhanced BLIP 模型生成标题的能力") # 更新描述
-    parser.add_argument("--model_path", type=str, default="scripts/output/caption_model/best_model.pth", help="训练好的模型权重路径")
+    parser.add_argument("--model_path", type=str, default="output/caption_model/best_model.pth", help="训练好的模型权重路径")
     parser.add_argument("--annotations_path", type=str, default="annotations/preprocessed_annotations_0_to_129_validation_with_titles.json", help="包含真实标题的预处理标注文件路径") # 更新帮助文本
     parser.add_argument("--blip_model_name", type=str, default="Salesforce/blip-image-captioning-base", help="基础 BLIP 模型名称")
     parser.add_argument("--batch_size", type=int, default=16, help="评估时的批次大小")
