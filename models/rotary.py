@@ -4,142 +4,6 @@ from typing import Optional, Union
 
 import torch
 
-import triton
-import triton.language as tl
-
-
-# @triton.autotune(
-#     configs=[
-#         triton.Config({"BLOCK_M": 2}),
-#         triton.Config({"BLOCK_M": 4}),
-#         triton.Config({"BLOCK_M": 8}),
-#         triton.Config({"BLOCK_M": 16}),
-#     ],
-#     key=["CACHE_KEY_SEQLEN", "BLOCK_K", "INTERLEAVED"],
-# )
-@triton.jit
-def rotary_kernel(
-    OUT,  # Pointers to matrices
-    X,
-    COS,
-    SIN,
-    CU_SEQLENS,
-    SEQLEN_OFFSETS,  # this could be int or a pointer
-    # Matrix dimensions
-    seqlen,
-    nheads,
-    rotary_dim,
-    seqlen_ro,
-    CACHE_KEY_SEQLEN,
-    # strides
-    stride_out_batch,
-    stride_out_seqlen,
-    stride_out_nheads,
-    stride_out_headdim,
-    stride_x_batch,
-    stride_x_seqlen,
-    stride_x_nheads,
-    stride_x_headdim,
-    # Meta-parameters
-    BLOCK_K: tl.constexpr,
-    IS_SEQLEN_OFFSETS_TENSOR: tl.constexpr,
-    IS_VARLEN: tl.constexpr,
-    INTERLEAVED: tl.constexpr,
-    CONJUGATE: tl.constexpr,
-    BLOCK_M: tl.constexpr,
-):
-    pid_m = tl.program_id(axis=0)
-    pid_batch = tl.program_id(axis=1)
-    pid_head = tl.program_id(axis=2)
-    rotary_dim_half = rotary_dim // 2
-
-    if not IS_VARLEN:
-        X = X + pid_batch * stride_x_batch + pid_head * stride_x_nheads
-        OUT = OUT + pid_batch * stride_out_batch + pid_head * stride_out_nheads
-    else:
-        start_idx = tl.load(CU_SEQLENS + pid_batch)
-        seqlen = tl.load(CU_SEQLENS + pid_batch + 1) - start_idx
-        X = X + start_idx * stride_x_seqlen + pid_head * stride_x_nheads
-        OUT = OUT + start_idx * stride_out_seqlen + pid_head * stride_out_nheads
-
-    if pid_m * BLOCK_M >= seqlen:
-        return
-    rm = pid_m * BLOCK_M + tl.arange(0, BLOCK_M)
-    if not IS_SEQLEN_OFFSETS_TENSOR:
-        rm_cs = rm + SEQLEN_OFFSETS
-    else:
-        rm_cs = rm + tl.load(SEQLEN_OFFSETS + pid_batch)
-    rk = tl.arange(0, BLOCK_K)
-    rk_half = tl.arange(0, BLOCK_K // 2)
-
-    if not INTERLEAVED:
-        # Load the 1st and 2nd halves of X, do calculation, then store to 1st and 2nd halves of OUT
-        X = X + (rm[:, None] * stride_x_seqlen + rk_half[None, :] * stride_x_headdim)
-        COS = COS + (rm_cs[:, None] * rotary_dim_half + rk_half[None, :])
-        SIN = SIN + (rm_cs[:, None] * rotary_dim_half + rk_half[None, :])
-        cos = tl.load(
-            COS, mask=(rm_cs[:, None] < seqlen_ro) & (rk_half[None, :] < rotary_dim_half), other=1.0
-        ).to(tl.float32)
-        sin = tl.load(
-            SIN, mask=(rm_cs[:, None] < seqlen_ro) & (rk_half[None, :] < rotary_dim_half), other=0.0
-        ).to(tl.float32)
-        x0 = tl.load(
-            X, mask=(rm[:, None] < seqlen) & (rk_half[None, :] < rotary_dim_half), other=0.0
-        ).to(tl.float32)
-        x1 = tl.load(
-            X + rotary_dim_half * stride_x_headdim,
-            mask=(rm[:, None] < seqlen) & (rk_half[None, :] < rotary_dim_half),
-            other=0.0,
-        ).to(tl.float32)
-        if CONJUGATE:
-            sin = -sin
-        o0 = x0 * cos - x1 * sin
-        o1 = x0 * sin + x1 * cos
-        # write back result
-        OUT = OUT + (rm[:, None] * stride_out_seqlen + rk_half[None, :] * stride_out_headdim)
-        tl.store(OUT, o0, mask=(rm[:, None] < seqlen) & (rk_half[None, :] < rotary_dim_half))
-        tl.store(
-            OUT + rotary_dim_half * stride_out_headdim,
-            o1,
-            mask=(rm[:, None] < seqlen) & (rk_half[None, :] < rotary_dim_half),
-        )
-    else:
-        # We don't want to load X[0, 2, 4, ...] and X[1, 3, 5, ...] separately since both are slow.
-        # Instead, we load x0 = X[0, 1, 2, 3, ...] and x1 = X[1, 0, 3, 2, ...].
-        # Loading x0 will be fast but x1 will be slow.
-        # Then we load cos = COS[0, 0, 1, 1, ...] and sin = SIN[0, 0, 1, 1, ...].
-        # Then we do the calculation and use tl.where to pick put the right outputs for the even
-        # and for the odd indices.
-        rk_swap = rk + ((rk + 1) % 2) * 2 - 1  # 1, 0, 3, 2, 5, 4, ...
-        rk_repeat = tl.arange(0, BLOCK_K) // 2
-        X0 = X + (rm[:, None] * stride_x_seqlen + rk[None, :] * stride_x_headdim)
-        X1 = X + (rm[:, None] * stride_x_seqlen + rk_swap[None, :] * stride_x_headdim)
-        COS = COS + (rm_cs[:, None] * rotary_dim_half + rk_repeat[None, :])
-        SIN = SIN + (rm_cs[:, None] * rotary_dim_half + rk_repeat[None, :])
-        cos = tl.load(
-            COS,
-            mask=(rm_cs[:, None] < seqlen_ro) & (rk_repeat[None, :] < rotary_dim_half),
-            other=1.0,
-        ).to(tl.float32)
-        sin = tl.load(
-            SIN,
-            mask=(rm_cs[:, None] < seqlen_ro) & (rk_repeat[None, :] < rotary_dim_half),
-            other=0.0,
-        ).to(tl.float32)
-        x0 = tl.load(X0, mask=(rm[:, None] < seqlen) & (rk[None, :] < rotary_dim), other=0.0).to(
-            tl.float32
-        )
-        x1 = tl.load(
-            X1, mask=(rm[:, None] < seqlen) & (rk_swap[None, :] < rotary_dim), other=0.0
-        ).to(tl.float32)
-        if CONJUGATE:
-            sin = -sin
-        x0_cos = x0 * cos
-        x1_sin = x1 * sin
-        out = tl.where(rk[None, :] % 2 == 0, x0_cos - x1_sin, x0_cos + x1_sin)
-        OUT = OUT + (rm[:, None] * stride_out_seqlen + rk[None, :] * stride_out_headdim)
-        tl.store(OUT, out, mask=(rm[:, None] < seqlen) & (rk[None, :] < rotary_dim))
-
 
 def apply_rotary(
     x: torch.Tensor,
@@ -177,7 +41,6 @@ def apply_rotary(
     assert sin.shape == cos.shape
     rotary_dim *= 2
     assert rotary_dim <= headdim, "rotary_dim must be <= headdim"
-    assert headdim <= 256, "Only support headdim <= 256"
     assert seqlen_ro >= seqlen, "seqlen_ro must be >= seqlen"
 
     assert (
@@ -195,49 +58,184 @@ def apply_rotary(
     else:
         assert seqlen_offsets + seqlen <= seqlen_ro
 
+    # 创建输出张量
     output = torch.empty_like(x) if not inplace else x
     if rotary_dim < headdim and not inplace:
         output[..., rotary_dim:].copy_(x[..., rotary_dim:])
-
-    BLOCK_K = (
-        32
-        if rotary_dim <= 32
-        else (64 if rotary_dim <= 64 else (128 if rotary_dim <= 128 else 256))
-    )
-    grid = lambda META: (triton.cdiv(seqlen, META["BLOCK_M"]), batch, nheads)  # noqa
-    BLOCK_M = 4 if interleaved else (8 if rotary_dim <= 64 else 4)
-
-    # Need this, otherwise Triton tries to launch from cuda:0 and we get
-    # ValueError: Pointer argument (at 0) cannot be accessed from Triton (cpu tensor?)
-    with torch.cuda.device(x.device.index):
-        rotary_kernel[grid](
-            output,  # data ptrs
-            x,
-            cos,
-            sin,
-            cu_seqlens,
-            seqlen_offsets,
-            seqlen,  # shapes
-            nheads,
-            rotary_dim,
-            seqlen_ro,
-            seqlen // 128,  # key for triton cache (limit number of compilations)
-            output.stride(0) if not is_varlen else 0,  # batch_strides if not varlen else 0
-            output.stride(-3),  # seqlen_stride or total_seqlen_stride
-            output.stride(-2),  # nheads_stride
-            output.stride(-1),  # headdim_stride
-            x.stride(0) if not is_varlen else 0,  # batch_strides if not varlen else 0
-            x.stride(-3),  # seqlen stride or total_seqlen_stride
-            x.stride(-2),  # nheads stride
-            x.stride(-1),  # headdim stride
-            BLOCK_K,
-            isinstance(seqlen_offsets, torch.Tensor),
-            is_varlen,
-            interleaved,
-            conjugate,
-            BLOCK_M,
-        )
+    
+    # 基于 cu_seqlens 处理变长序列的情况
+    if is_varlen:
+        # 变长序列的处理逻辑
+        # 因为这种情况比较复杂，我们这里提供一个基本实现
+        if not interleaved:
+            # 处理未交错的情况（前半部分和后半部分分开旋转）
+            for i in range(batch):
+                start_idx = cu_seqlens[i].item()
+                end_idx = cu_seqlens[i + 1].item()
+                seq_len_i = end_idx - start_idx
+                offset_i = seqlen_offsets[i].item() if isinstance(seqlen_offsets, torch.Tensor) else seqlen_offsets
+                
+                # 获取当前批次的输入
+                xi = x[start_idx:end_idx]  # [seq_len_i, nheads, headdim]
+                
+                # 应用旋转
+                for j in range(seq_len_i):
+                    j_offset = j + offset_i
+                    if j_offset >= seqlen_ro:
+                        continue
+                    
+                    # 旋转前半部分
+                    x_j = xi[j, :, :rotary_dim//2]
+                    y_j = xi[j, :, rotary_dim//2:rotary_dim]
+                    
+                    cos_j = cos[j_offset].unsqueeze(0)  # [1, rotary_dim//2]
+                    sin_j = sin[j_offset].unsqueeze(0)  # [1, rotary_dim//2]
+                    
+                    if conjugate:
+                        sin_j = -sin_j
+                    
+                    # 应用旋转
+                    output[start_idx + j, :, :rotary_dim//2] = x_j * cos_j - y_j * sin_j
+                    output[start_idx + j, :, rotary_dim//2:rotary_dim] = x_j * sin_j + y_j * cos_j
+        else:
+            # 交错旋转的情况（GPT-J风格）
+            for i in range(batch):
+                start_idx = cu_seqlens[i].item()
+                end_idx = cu_seqlens[i + 1].item()
+                seq_len_i = end_idx - start_idx
+                offset_i = seqlen_offsets[i].item() if isinstance(seqlen_offsets, torch.Tensor) else seqlen_offsets
+                
+                # 获取当前批次的输入
+                xi = x[start_idx:end_idx]  # [seq_len_i, nheads, headdim]
+                
+                # 应用旋转
+                for j in range(seq_len_i):
+                    j_offset = j + offset_i
+                    if j_offset >= seqlen_ro:
+                        continue
+                    
+                    # 旋转交错维度
+                    # 交错模式下，我们对偶数和奇数位置分别应用旋转
+                    for d in range(0, rotary_dim, 2):
+                        if d + 1 >= headdim:
+                            break
+                        
+                        # 获取当前位置的值
+                        x0 = xi[j, :, d]  # [nheads]
+                        x1 = xi[j, :, d+1]  # [nheads]
+                        
+                        # 获取对应的cos、sin值
+                        cos_idx = j_offset
+                        cos_d = cos[cos_idx, d//2]  # 标量
+                        sin_d = sin[cos_idx, d//2]  # 标量
+                        
+                        if conjugate:
+                            sin_d = -sin_d
+                        
+                        # 应用旋转
+                        output[start_idx + j, :, d] = x0 * cos_d - x1 * sin_d
+                        output[start_idx + j, :, d+1] = x0 * sin_d + x1 * cos_d
+    else:
+        # 处理固定长度序列的情况
+        # 偏移量处理
+        if isinstance(seqlen_offsets, torch.Tensor):
+            # 每个批次有不同的偏移量
+            for i in range(batch):
+                offset_i = seqlen_offsets[i].item()
+                
+                # 获取有效的序列长度（考虑偏移量）
+                valid_seqlen = min(seqlen, seqlen_ro - offset_i)
+                
+                if not interleaved:
+                    # 非交错模式（GPT-NeoX风格）
+                    # 前半部分
+                    x1 = x[i, :valid_seqlen, :, :rotary_dim//2]  # [valid_seqlen, nheads, rotary_dim//2]
+                    # 后半部分
+                    x2 = x[i, :valid_seqlen, :, rotary_dim//2:rotary_dim]  # [valid_seqlen, nheads, rotary_dim//2]
+                    
+                    # 提取对应的cos和sin值
+                    cos_i = cos[offset_i:offset_i+valid_seqlen]  # [valid_seqlen, rotary_dim//2]
+                    sin_i = sin[offset_i:offset_i+valid_seqlen]  # [valid_seqlen, rotary_dim//2]
+                    
+                    if conjugate:
+                        sin_i = -sin_i
+                        
+                    # 扩展维度以便广播
+                    cos_i = cos_i.unsqueeze(1)  # [valid_seqlen, 1, rotary_dim//2]
+                    sin_i = sin_i.unsqueeze(1)  # [valid_seqlen, 1, rotary_dim//2]
+                    
+                    # 应用旋转变换
+                    output[i, :valid_seqlen, :, :rotary_dim//2] = x1 * cos_i - x2 * sin_i
+                    output[i, :valid_seqlen, :, rotary_dim//2:rotary_dim] = x1 * sin_i + x2 * cos_i
+                else:
+                    # 交错模式（GPT-J风格）
+                    for j in range(valid_seqlen):
+                        for d in range(0, rotary_dim, 2):
+                            if d + 1 >= headdim:
+                                break
+                            
+                            # 交错旋转对偶数和相邻的奇数位置一起旋转
+                            x0 = x[i, j, :, d]  # [nheads]
+                            x1 = x[i, j, :, d+1]  # [nheads]
+                            
+                            cos_d = cos[j + offset_i, d//2]  # 标量
+                            sin_d = sin[j + offset_i, d//2]  # 标量
+                            
+                            if conjugate:
+                                sin_d = -sin_d
+                            
+                            # 应用旋转
+                            output[i, j, :, d] = x0 * cos_d - x1 * sin_d
+                            output[i, j, :, d+1] = x0 * sin_d + x1 * cos_d
+        else:
+            # 所有批次使用相同的偏移量
+            offset = seqlen_offsets
+            valid_seqlen = min(seqlen, seqlen_ro - offset)
+            
+            if not interleaved:
+                # 非交错模式（GPT-NeoX风格）
+                # 前半部分
+                x1 = x[:, :valid_seqlen, :, :rotary_dim//2]  # [batch, valid_seqlen, nheads, rotary_dim//2]
+                # 后半部分
+                x2 = x[:, :valid_seqlen, :, rotary_dim//2:rotary_dim]  # [batch, valid_seqlen, nheads, rotary_dim//2]
+                
+                # 提取对应的cos和sin值
+                cos_seq = cos[offset:offset+valid_seqlen]  # [valid_seqlen, rotary_dim//2]
+                sin_seq = sin[offset:offset+valid_seqlen]  # [valid_seqlen, rotary_dim//2]
+                
+                if conjugate:
+                    sin_seq = -sin_seq
+                
+                # 扩展维度以便广播
+                cos_seq = cos_seq.unsqueeze(0).unsqueeze(2)  # [1, valid_seqlen, 1, rotary_dim//2]
+                sin_seq = sin_seq.unsqueeze(0).unsqueeze(2)  # [1, valid_seqlen, 1, rotary_dim//2]
+                
+                # 应用旋转变换
+                output[:, :valid_seqlen, :, :rotary_dim//2] = x1 * cos_seq - x2 * sin_seq
+                output[:, :valid_seqlen, :, rotary_dim//2:rotary_dim] = x1 * sin_seq + x2 * cos_seq
+            else:
+                # 批量处理交错模式
+                for j in range(valid_seqlen):
+                    for d in range(0, rotary_dim, 2):
+                        if d + 1 >= headdim:
+                            break
+                        
+                        # 交错旋转对偶数和相邻的奇数位置一起旋转
+                        x0 = x[:, j, :, d]  # [batch, nheads]
+                        x1 = x[:, j, :, d+1]  # [batch, nheads]
+                        
+                        cos_d = cos[j + offset, d//2]  # 标量
+                        sin_d = sin[j + offset, d//2]  # 标量
+                        
+                        if conjugate:
+                            sin_d = -sin_d
+                        
+                        # 应用旋转
+                        output[:, j, :, d] = x0 * cos_d - x1 * sin_d
+                        output[:, j, :, d+1] = x0 * sin_d + x1 * cos_d
+    
     return output
+
 
 class ApplyRotaryEmb(torch.autograd.Function):
     @staticmethod
@@ -276,8 +274,7 @@ class ApplyRotaryEmb(torch.autograd.Function):
         dout,
     ):
         cos, sin = ctx.saved_tensors
-        # The apply_rotary function supports batch varlen,GRADIENT_PAD_TO_MAX but the backward pass does not.
-        # The logic is a bit involved and we don't need it for inference.
+        # 反向传播使用共轭操作
         dx = apply_rotary(
             dout,
             cos,
