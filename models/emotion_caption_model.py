@@ -9,7 +9,7 @@ from torchvision import transforms
 # 导入 MultiheadDiffAttn 和 RotaryEmbedding
 from .multihead_diffattn import MultiheadDiffAttn
 from .rotary import RotaryEmbedding
-from utils.emotion_utils import EMOTION_CATEGORIES # 直接从根目录导入 utils
+from ..utils.emotion_utils import EMOTION_CATEGORIES # 直接从根目录导入 utils
 
 logger = logging.getLogger(__name__)
 
