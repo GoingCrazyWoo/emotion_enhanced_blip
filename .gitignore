@@ -13,3 +13,6 @@ scripts/output/*
 output/
 annotations_copy/
 scripts/test_val_labels.py
+
+.idea/
+

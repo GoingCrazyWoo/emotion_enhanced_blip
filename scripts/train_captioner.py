@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 import torch.optim as optim
 from tqdm import tqdm
 from transformers import get_linear_schedule_with_warmup, BlipProcessor
-from torch.amp import autocast, GradScaler  # 使用新的torch.amp API
+from torch.amp import autocast, GradScaler # 使用新的torch.amp API
 from huggingface_hub import snapshot_download
 
 # 添加项目根目录到Python路径
@@ -240,15 +240,32 @@ def train(args):
     logger.info(f"训练集: {len(train_dataset)} 样本")
     logger.info(f"验证集: {len(val_dataset)} 样本")
     
+    # train_loader = DataLoader(
+    #     train_dataset,
+    #     batch_size=args.batch_size,
+    #     shuffle=True,
+    #     collate_fn=collate_fn,
+    #     num_workers=args.num_workers,
+    #     pin_memory=True
+    # )
+    #
+    # val_loader = DataLoader(
+    #     val_dataset,
+    #     batch_size=args.batch_size,
+    #     shuffle=False,
+    #     collate_fn=collate_fn,
+    #     num_workers=args.num_workers,
+    #     pin_memory=True
+    # )
     train_loader = DataLoader(
-        train_dataset,
+        val_dataset,
         batch_size=args.batch_size,
         shuffle=True,
         collate_fn=collate_fn,
         num_workers=args.num_workers,
         pin_memory=True
     )
-    
+
     val_loader = DataLoader(
         val_dataset,
         batch_size=args.batch_size,
@@ -257,6 +274,7 @@ def train(args):
         num_workers=args.num_workers,
         pin_memory=True
     )
+
     
     # 设置优化器和学习率调度器
     optimizer = optim.AdamW(
@@ -301,6 +319,7 @@ def train(args):
     
     # 训练循环
     best_val_loss = float("inf")
+    best_train_loss = float("inf")
     training_history = []
     
     for epoch in range(args.epochs):
@@ -488,113 +507,113 @@ def train(args):
         avg_train_emotion_loss = train_emotion_loss / train_batches if train_batches > 0 else 0.0
         logger.info(f"平均训练损失: {avg_train_loss:.4f} (标题: {avg_train_caption_loss:.4f}, 情感: {avg_train_emotion_loss:.4f})")
 
-        # 验证阶段
-        model.eval()
-        val_loss = 0.0
-        val_caption_loss = 0.0
-        val_emotion_loss = 0.0
-        val_batches = 0
-
-        with torch.no_grad():
-            val_progress = tqdm(val_loader, desc=f"验证轮次 {epoch+1}")
-            for batch in val_progress:
-                # 将数据移到设备
-                pixel_values = batch["pixel_values"].to(device)
-                emotion_indices = batch["emotion_indices"].to(device)
-                confidence_values = batch["confidence_values"].to(device)
-                emotion_labels_multi_hot = batch["emotion_labels_multi_hot"].to(device)
-                
-                # 处理可选的标签和注意力掩码
-                input_ids = batch.get("labels", None)
-                attention_mask = batch.get("attention_mask", None)
-                labels = batch.get("labels", None)
-                
-                # 如果有标签且不是仅情感模式，移动到设备
-                if not args.emotion_only and labels is not None:
-                    input_ids = input_ids.to(device)
-                    attention_mask = attention_mask.to(device)
-                    labels = labels.to(device)
-                else:
-                    # 如果只训练情感，或者没有标签，设为None
-                    input_ids = None
-                    attention_mask = None
-                    labels = None
-
-                # 验证时也使用混合精度，但不需要梯度
-                with autocast(device_type, enabled=args.fp16):
-                    try:
-                        # 前向传播，根据模式决定是否使用标题生成
-                        if args.emotion_only or labels is None:
-                            # 仅使用情感分类 (不计算标题生成损失)
-                            outputs = model(
-                                pixel_values=pixel_values,
-                                emotion_indices=emotion_indices,
-                                confidence_values=confidence_values,
-                                emotion_labels_multi_hot=emotion_labels_multi_hot,
-                                emotion_loss_weight=1.0  # 如果只使用情感损失，权重设为1
-                            )
-                        else:
-                            # 同时使用情感分类和标题生成 (尝试计算两种损失)
-                            try:
-                                outputs = model(
-                                    pixel_values=pixel_values,
-                                    emotion_indices=emotion_indices,
-                                    confidence_values=confidence_values,
-                                    input_ids=input_ids,
-                                    attention_mask=attention_mask,
-                                    labels=labels,
-                                    emotion_labels_multi_hot=emotion_labels_multi_hot,
-                                    emotion_loss_weight=args.emotion_loss_weight
-                                )
-                            except RuntimeError as e:
-                                if "mat1 and mat2 shapes cannot be multiplied" in str(e):
-                                    # 回退到仅使用情感分类
-                                    outputs = model(
-                                        pixel_values=pixel_values,
-                                        emotion_indices=emotion_indices,
-                                        confidence_values=confidence_values,
-                                        emotion_labels_multi_hot=emotion_labels_multi_hot,
-                                        emotion_loss_weight=1.0
-                                    )
-                                else:
-                                    raise
-                    
-                        # 获取损失
-                        loss = outputs.get("loss")
-                        caption_loss = outputs.get("caption_loss")
-                        emotion_loss = outputs.get("emotion_loss")
-
-                        # 更新验证损失
-                        if loss is not None:
-                            val_loss += loss.item()
-                            if caption_loss is not None:
-                                val_caption_loss += caption_loss if isinstance(caption_loss, float) else caption_loss.item()
-                            if emotion_loss is not None:
-                                val_emotion_loss += emotion_loss if isinstance(emotion_loss, float) else emotion_loss.item()
-                            val_batches += 1
-
-                            # 更新进度条
-                            log_dict = {"loss": f"{loss.item():.4f}"}
-                            if caption_loss is not None:
-                                if isinstance(caption_loss, float):
-                                    log_dict["cap_loss"] = f"{caption_loss:.4f}"
-                                else:
-                                    log_dict["cap_loss"] = f"{caption_loss.item():.4f}"
-                            if emotion_loss is not None:
-                                if isinstance(emotion_loss, float):
-                                    log_dict["emo_loss"] = f"{emotion_loss:.4f}"
-                                else:
-                                    log_dict["emo_loss"] = f"{emotion_loss.item():.4f}"
-                            val_progress.set_postfix(log_dict)
-                    except Exception as e:
-                        logger.error(f"验证过程中出错: {e}")
-                        continue
-
-        # 计算平均验证损失 (确保 val_batches > 0)
-        avg_val_loss = val_loss / val_batches if val_batches > 0 else 0.0
-        avg_val_caption_loss = val_caption_loss / val_batches if val_batches > 0 else 0.0
-        avg_val_emotion_loss = val_emotion_loss / val_batches if val_batches > 0 else 0.0
-        logger.info(f"平均验证损失: {avg_val_loss:.4f} (标题: {avg_val_caption_loss:.4f}, 情感: {avg_val_emotion_loss:.4f})")
+        # # 验证阶段
+        # model.eval()
+        # val_loss = 0.0
+        # val_caption_loss = 0.0
+        # val_emotion_loss = 0.0
+        # val_batches = 0
+        #
+        # with torch.no_grad():
+        #     val_progress = tqdm(val_loader, desc=f"验证轮次 {epoch+1}")
+        #     for batch in val_progress:
+        #         # 将数据移到设备
+        #         pixel_values = batch["pixel_values"].to(device)
+        #         emotion_indices = batch["emotion_indices"].to(device)
+        #         confidence_values = batch["confidence_values"].to(device)
+        #         emotion_labels_multi_hot = batch["emotion_labels_multi_hot"].to(device)
+        #
+        #         # 处理可选的标签和注意力掩码
+        #         input_ids = batch.get("labels", None)
+        #         attention_mask = batch.get("attention_mask", None)
+        #         labels = batch.get("labels", None)
+        #
+        #         # 如果有标签且不是仅情感模式，移动到设备
+        #         if not args.emotion_only and labels is not None:
+        #             input_ids = input_ids.to(device)
+        #             attention_mask = attention_mask.to(device)
+        #             labels = labels.to(device)
+        #         else:
+        #             # 如果只训练情感，或者没有标签，设为None
+        #             input_ids = None
+        #             attention_mask = None
+        #             labels = None
+        #
+        #         # 验证时也使用混合精度，但不需要梯度
+        #         with autocast(device_type, enabled=args.fp16):
+        #             try:
+        #                 # 前向传播，根据模式决定是否使用标题生成
+        #                 if args.emotion_only or labels is None:
+        #                     # 仅使用情感分类 (不计算标题生成损失)
+        #                     outputs = model(
+        #                         pixel_values=pixel_values,
+        #                         emotion_indices=emotion_indices,
+        #                         confidence_values=confidence_values,
+        #                         emotion_labels_multi_hot=emotion_labels_multi_hot,
+        #                         emotion_loss_weight=1.0  # 如果只使用情感损失，权重设为1
+        #                     )
+        #                 else:
+        #                     # 同时使用情感分类和标题生成 (尝试计算两种损失)
+        #                     try:
+        #                         outputs = model(
+        #                             pixel_values=pixel_values,
+        #                             emotion_indices=emotion_indices,
+        #                             confidence_values=confidence_values,
+        #                             input_ids=input_ids,
+        #                             attention_mask=attention_mask,
+        #                             labels=labels,
+        #                             emotion_labels_multi_hot=emotion_labels_multi_hot,
+        #                             emotion_loss_weight=args.emotion_loss_weight
+        #                         )
+        #                     except RuntimeError as e:
+        #                         if "mat1 and mat2 shapes cannot be multiplied" in str(e):
+        #                             # 回退到仅使用情感分类
+        #                             outputs = model(
+        #                                 pixel_values=pixel_values,
+        #                                 emotion_indices=emotion_indices,
+        #                                 confidence_values=confidence_values,
+        #                                 emotion_labels_multi_hot=emotion_labels_multi_hot,
+        #                                 emotion_loss_weight=1.0
+        #                             )
+        #                         else:
+        #                             raise
+        #
+        #                 # 获取损失
+        #                 loss = outputs.get("loss")
+        #                 caption_loss = outputs.get("caption_loss")
+        #                 emotion_loss = outputs.get("emotion_loss")
+        #
+        #                 # 更新验证损失
+        #                 if loss is not None:
+        #                     val_loss += loss.item()
+        #                     if caption_loss is not None:
+        #                         val_caption_loss += caption_loss if isinstance(caption_loss, float) else caption_loss.item()
+        #                     if emotion_loss is not None:
+        #                         val_emotion_loss += emotion_loss if isinstance(emotion_loss, float) else emotion_loss.item()
+        #                     val_batches += 1
+        #
+        #                     # 更新进度条
+        #                     log_dict = {"loss": f"{loss.item():.4f}"}
+        #                     if caption_loss is not None:
+        #                         if isinstance(caption_loss, float):
+        #                             log_dict["cap_loss"] = f"{caption_loss:.4f}"
+        #                         else:
+        #                             log_dict["cap_loss"] = f"{caption_loss.item():.4f}"
+        #                     if emotion_loss is not None:
+        #                         if isinstance(emotion_loss, float):
+        #                             log_dict["emo_loss"] = f"{emotion_loss:.4f}"
+        #                         else:
+        #                             log_dict["emo_loss"] = f"{emotion_loss.item():.4f}"
+        #                     val_progress.set_postfix(log_dict)
+        #             except Exception as e:
+        #                 logger.error(f"验证过程中出错: {e}")
+        #                 continue
+        #
+        # # 计算平均验证损失 (确保 val_batches > 0)
+        # avg_val_loss = val_loss / val_batches if val_batches > 0 else 0.0
+        # avg_val_caption_loss = val_caption_loss / val_batches if val_batches > 0 else 0.0
+        # avg_val_emotion_loss = val_emotion_loss / val_batches if val_batches > 0 else 0.0
+        # logger.info(f"平均验证损失: {avg_val_loss:.4f} (标题: {avg_val_caption_loss:.4f}, 情感: {avg_val_emotion_loss:.4f})")
 
         # 记录训练历史
         epoch_history = {
@@ -602,9 +621,9 @@ def train(args):
             "train_loss": avg_train_loss,
             "train_caption_loss": avg_train_caption_loss,
             "train_emotion_loss": avg_train_emotion_loss,
-            "val_loss": avg_val_loss,
-            "val_caption_loss": avg_val_caption_loss,
-            "val_emotion_loss": avg_val_emotion_loss,
+            #"val_loss": avg_val_loss,
+            #"val_caption_loss": avg_val_caption_loss,
+            #"val_emotion_loss": avg_val_emotion_loss,
             "learning_rate": scheduler.get_last_lr()[0]
         }
         training_history.append(epoch_history)
@@ -619,12 +638,17 @@ def train(args):
         logger.info(f"模型已保存到 {model_path}")
         
         # 保存最佳模型
-        if avg_val_loss < best_val_loss:
-            best_val_loss = avg_val_loss
+        # if avg_val_loss < best_val_loss:
+        #     best_val_loss = avg_val_loss
+        #     best_model_path = os.path.join(args.output_dir, "best_model.pth")
+        #     torch.save(model.state_dict(), best_model_path)
+        #     logger.info(f"最佳模型已保存到 {best_model_path}，验证损失: {best_val_loss:.4f}")
+        #
+        if avg_train_loss < best_train_loss:
+            best_train_loss = avg_train_loss
             best_model_path = os.path.join(args.output_dir, "best_model.pth")
             torch.save(model.state_dict(), best_model_path)
             logger.info(f"最佳模型已保存到 {best_model_path}，验证损失: {best_val_loss:.4f}")
-    
     logger.info("训练完成！")
     logger.info(f"最佳验证损失: {best_val_loss:.4f}")
 
@@ -655,7 +679,7 @@ def main():
     parser.add_argument("--num_workers", type=int, default=0, help="数据加载器的工作线程数")
     parser.add_argument("--save_steps", type=int, default=0, help="多少步保存一次检查点，0表示不保存")
     parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu", help="训练设备")
-    parser.add_argument("--fp16", action="store_true", default=True, help="是否使用半精度(FP16)训练")
+    parser.add_argument("--fp16", action="store_true", help="是否使用半精度(FP16)训练")
     parser.add_argument("--emotion_loss_weight", type=float, default=0.5, help="情感分类损失的权重")
     parser.add_argument("--emotion_only", action="store_true", default=False, help="是否仅使用情感分类损失（忽略标题生成损失）")
 
@@ -683,6 +707,8 @@ def main():
         elif args.device != "cuda":
             logger.warning("警告: 选择了非CUDA设备，无法使用半精度训练。已自动禁用FP16。")
             args.fp16 = False
+        else:
+            logger.info("使用半精度训练")
     
     # 开始训练
     train(args)

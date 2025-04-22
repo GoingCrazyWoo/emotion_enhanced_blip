@@ -26,7 +26,7 @@ class EmotionEncoder(nn.Module):
         emotion_dim: int = 32,
         max_emotions: int = 3,
         hidden_dim: int = 768, # 假设 BLIP base 的 hidden_dim 为 768
-        num_heads: int = 8,    # 假设基线 Transformer 有 16 个头
+        num_heads: int = 8,    # 假设基线 Transformer 有 16->8 个头
         depth: int = 0,        # 层索引
         dropout: float = 0.1
     ):

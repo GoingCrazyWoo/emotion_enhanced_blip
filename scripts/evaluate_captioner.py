@@ -191,14 +191,15 @@ def evaluate_model(model, dataloader, device, processor, max_samples=None, outpu
         # 初始化 COCO API
         coco = COCO(gts_path)
         cocoRes = coco.loadRes(res_path)
-
+        print("初始化COCO API完成")
         # 创建评估器
         cocoEval = COCOEvalCap(coco, cocoRes)
-
+        print("创建评估器完成")
         # 仅评估我们有结果的图像
         cocoEval.params['image_id'] = cocoRes.getImgIds()
 
         # 执行评估
+        print("开始评估")
         cocoEval.evaluate()
 
         print("\n--- 评估结果 (BLEU, ROUGE using pycocoevalcap) ---")
