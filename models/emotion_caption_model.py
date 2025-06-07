@@ -1,15 +1,15 @@
+import logging
+from typing import Dict, Optional, Tuple, Any, Union
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import logging
-from typing import Dict, List, Optional, Tuple, Any, Union
 from transformers import BlipProcessor, BlipForConditionalGeneration, LogitsProcessor
-from torchvision import transforms
 
 # 导入 MultiheadDiffAttn 和 RotaryEmbedding
 from .multihead_diffattn import MultiheadDiffAttn
 from .rotary import RotaryEmbedding
-from ..utils.emotion_utils import EMOTION_CATEGORIES # 直接从根目录导入 utils
+from ..utils.emotion_utils import EMOTION_CATEGORIES  # 直接从根目录导入 utils
 
 logger = logging.getLogger(__name__)
 
@@ -17,18 +17,19 @@ logger = logging.getLogger(__name__)
 EMOTION_TO_INDEX = {emotion: idx for idx, emotion in enumerate(EMOTION_CATEGORIES)}
 INDEX_TO_EMOTION = {idx: emotion for idx, emotion in enumerate(EMOTION_CATEGORIES)}
 
+
 class EmotionEncoder(nn.Module):
     """情感编码器，将情感索引和置信度转换为嵌入表示"""
 
     def __init__(
-        self,
-        num_emotions: int = len(EMOTION_CATEGORIES),
-        emotion_dim: int = 32,
-        max_emotions: int = 3,
-        hidden_dim: int = 768, # 假设 BLIP base 的 hidden_dim 为 768
-        num_heads: int = 8,    # 假设基线 Transformer 有 16->8 个头
-        depth: int = 0,        # 层索引
-        dropout: float = 0.1
+            self,
+            num_emotions: int = len(EMOTION_CATEGORIES),
+            emotion_dim: int = 32,
+            max_emotions: int = 3,
+            hidden_dim: int = 768,  # 假设 BLIP base 的 hidden_dim 为 768
+            num_heads: int = 8,  # 假设基线 Transformer 有 16->8 个头
+            depth: int = 0,  # 层索引
+            dropout: float = 0.1
     ):
         """
         初始化情感编码器
@@ -53,7 +54,7 @@ class EmotionEncoder(nn.Module):
 
         # 情感嵌入层
         self.emotion_embeddings = nn.Embedding(
-            num_embeddings=num_emotions+1,  # +1 为了处理填充值
+            num_embeddings=num_emotions + 1,  # +1 为了处理填充值
             embedding_dim=emotion_dim,
             padding_idx=num_emotions  # 使用最后一个索引作为padding_idx
         )
@@ -74,13 +75,13 @@ class EmotionEncoder(nn.Module):
             embed_dim=hidden_dim,
             depth=depth,
             num_heads=num_heads,
-            num_kv_heads=None # 使用 MHA
+            num_kv_heads=None  # 使用 MHA
         )
 
     def forward(
-        self,
-        emotion_indices: torch.LongTensor,
-        confidence_values: torch.FloatTensor
+            self,
+            emotion_indices: torch.LongTensor,
+            confidence_values: torch.FloatTensor
     ) -> torch.FloatTensor:
         """
         前向传播
@@ -96,7 +97,8 @@ class EmotionEncoder(nn.Module):
 
         # --- 1. 处理输入索引和置信度 ---
         # 将-1替换为padding_idx(num_emotions)
-        emotion_indices = torch.where(emotion_indices < 0, torch.tensor(self.num_emotions, device=emotion_indices.device), emotion_indices)
+        emotion_indices = torch.where(emotion_indices < 0,
+                                      torch.tensor(self.num_emotions, device=emotion_indices.device), emotion_indices)
 
         # 确保emotion_indices形状正确
         if emotion_indices.size(1) != self.max_emotions:
@@ -105,13 +107,13 @@ class EmotionEncoder(nn.Module):
             if current_emotions < self.max_emotions:
                 # 如果实际情感数量小于最大情感数量，填充
                 padding = torch.full((batch_size, self.max_emotions - current_emotions),
-                                   self.num_emotions,
-                                   device=emotion_indices.device)
+                                     self.num_emotions,
+                                     device=emotion_indices.device)
                 emotion_indices = torch.cat([emotion_indices, padding], dim=1)
 
                 # 同样处理置信度值
                 conf_padding = torch.zeros(batch_size, self.max_emotions - current_emotions,
-                                         device=confidence_values.device)
+                                           device=confidence_values.device)
                 confidence_values = torch.cat([confidence_values, conf_padding], dim=1)
             else:
                 # 如果实际情感数量大于最大情感数量，截断
@@ -129,7 +131,7 @@ class EmotionEncoder(nn.Module):
         # 转换每个情感嵌入 [batch_size, max_emotions, hidden_dim]
         # --- 3. 初始特征转换 ---
         transformed_embeds = self.emotion_transform(weighted_embeds)
-        
+
         # --- 4. 应用 Multihead Differential Attention ---
         # 计算旋转位置编码
         freqs_cos, freqs_sin = self.rotary_emb(transformed_embeds)
@@ -137,21 +139,21 @@ class EmotionEncoder(nn.Module):
         if freqs_cos.dtype != emotion_embeds.dtype:
             freqs_cos = freqs_cos.to(emotion_embeds.dtype)
             freqs_sin = freqs_sin.to(emotion_embeds.dtype)
-        
-        
+
         rel_pos = (freqs_cos, freqs_sin)
 
         # 创建注意力掩码 (忽略 padding token)
         # padding_idx 是 self.num_emotions
         # attention_mask 的形状应为 [batch_size, 1, tgt_len, src_len] 或 [tgt_len, src_len]
         # 这里我们希望非 padding 的 token 互相可见
-        attn_mask = (emotion_indices == self.num_emotions).unsqueeze(1).unsqueeze(2) # [bs, 1, 1, max_emotions]
-        attn_mask = attn_mask.expand(-1, -1, self.max_emotions, -1) # [bs, 1, max_emotions, max_emotions]
+        attn_mask = (emotion_indices == self.num_emotions).unsqueeze(1).unsqueeze(2)  # [bs, 1, 1, max_emotions]
+        attn_mask = attn_mask.expand(-1, -1, self.max_emotions, -1)  # [bs, 1, max_emotions, max_emotions]
         # 在 MultiheadDiffAttn 内部会处理 causal mask，这里我们只需要处理 padding
         # MultiheadDiffAttn 期望的 mask 是 True 代表 mask 掉，所以需要反转
         # 但是 MultiheadDiffAttn 内部实现似乎是加性掩码，0 代表可见，-inf 代表 mask
         # 我们需要创建一个 mask，其中 padding 位置为 -inf，其他位置为 0
-        additive_attn_mask = torch.zeros(batch_size, 1, self.max_emotions, self.max_emotions, device=transformed_embeds.device)
+        additive_attn_mask = torch.zeros(batch_size, 1, self.max_emotions, self.max_emotions,
+                                         device=transformed_embeds.device)
         additive_attn_mask.masked_fill_(attn_mask, float("-inf"))
         # MultiheadDiffAttn 内部会处理 causal mask，我们不需要在这里添加
         # 因此，我们只传递 padding mask
@@ -160,28 +162,29 @@ class EmotionEncoder(nn.Module):
         attn_output = self.diff_attn(
             x=transformed_embeds,
             rel_pos=rel_pos,
-            attn_mask=additive_attn_mask # 传递 padding mask
-        ) # [batch_size, max_emotions, hidden_dim]
+            attn_mask=additive_attn_mask  # 传递 padding mask
+        )  # [batch_size, max_emotions, hidden_dim]
 
         # --- 5. 池化特征 ---
         # 使用平均池化聚合特征，忽略 padding token 的影响
         # 创建一个掩码，非 padding 位置为 1，padding 位置为 0
-        non_padding_mask = (emotion_indices != self.num_emotions).float().unsqueeze(-1) # [bs, max_emotions, 1]
+        non_padding_mask = (emotion_indices != self.num_emotions).float().unsqueeze(-1)  # [bs, max_emotions, 1]
         # 计算加权和
         masked_attn_output = attn_output * non_padding_mask
-        summed_features = masked_attn_output.sum(dim=1) # [bs, hidden_dim]
+        summed_features = masked_attn_output.sum(dim=1)  # [bs, hidden_dim]
         # 计算非 padding token 的数量
-        num_non_padding = non_padding_mask.sum(dim=1) # [bs, 1]
+        num_non_padding = non_padding_mask.sum(dim=1)  # [bs, 1]
         # 避免除以零
         num_non_padding = torch.clamp(num_non_padding, min=1.0)
         # 计算平均值
-        emotion_features = summed_features / num_non_padding # [bs, hidden_dim]
+        emotion_features = summed_features / num_non_padding  # [bs, hidden_dim]
 
         return emotion_features
 
 
 class EmotionLogitsProcessor(LogitsProcessor):
     """在生成过程中根据情感特征调整 logits。"""
+
     def __init__(self, model_instance, emotion_features, alpha: float = 0.1):
         """
         初始化 Logits Processor。
@@ -200,7 +203,7 @@ class EmotionLogitsProcessor(LogitsProcessor):
 
         # 预计算情感对 logits 的影响，避免在每步重复计算
         # [bs, hidden_dim] -> [bs, vocab_size]
-        with torch.no_grad(): # 确保在推理时不计算梯度
+        with torch.no_grad():  # 确保在推理时不计算梯度
             emotion_logits_bias = self.model.emotion_adapter(self.emotion_features)
             self.emotion_logits_bias = self.model.emotion_projector(emotion_logits_bias)
 
@@ -225,13 +228,14 @@ class EmotionLogitsProcessor(LogitsProcessor):
         # 需要将 emotion_logits_bias [bs, vocab_size] 扩展以匹配 scores [bs * num_beams, vocab_size]
         num_beams = current_batch_size // self.batch_size
         if num_beams <= 0:
-             # 处理 batch_size=1 且 num_beams=1 的情况
-             if current_batch_size == self.batch_size:
-                 num_beams = 1
-             else:
-                 # 如果无法确定 beam 数量，可能出错了，跳过修改
-                 logger.warning(f"Could not determine beam size. Scores shape: {scores.shape}, Emotion bias shape: {self.emotion_logits_bias.shape}")
-                 return scores
+            # 处理 batch_size=1 且 num_beams=1 的情况
+            if current_batch_size == self.batch_size:
+                num_beams = 1
+            else:
+                # 如果无法确定 beam 数量，可能出错了，跳过修改
+                logger.warning(
+                    f"Could not determine beam size. Scores shape: {scores.shape}, Emotion bias shape: {self.emotion_logits_bias.shape}")
+                return scores
 
         # 扩展情感偏差以匹配 beam search 的维度
         # [bs, vocab_size] -> [bs * num_beams, vocab_size]
@@ -239,8 +243,9 @@ class EmotionLogitsProcessor(LogitsProcessor):
 
         # 确保扩展后的形状匹配
         if expanded_emotion_bias.shape != scores.shape:
-             logger.warning(f"Shape mismatch after expanding emotion bias. Scores: {scores.shape}, Expanded Bias: {expanded_emotion_bias.shape}. Skipping modification.")
-             return scores
+            logger.warning(
+                f"Shape mismatch after expanding emotion bias. Scores: {scores.shape}, Expanded Bias: {expanded_emotion_bias.shape}. Skipping modification.")
+            return scores
 
         # --- 融合逻辑: 加性融合 ---
         # 使用预设的 alpha 值来控制情感影响强度
@@ -251,18 +256,17 @@ class EmotionLogitsProcessor(LogitsProcessor):
         return modified_scores
 
 
-
 class EmotionEnhancedBlipForCaption(nn.Module):
     """情感增强的BLIP描述生成模型"""
 
     def __init__(
-        self,
-        blip_model_name: str = "Salesforce/blip-image-captioning-base",
-        dropout: float = 0.1,
-        max_emotions: int = 3,
-        emotion_dim: int = 32,
-        freeze_blip: bool = True,
-        proxy: Optional[str] = None
+            self,
+            blip_model_name: str = "Salesforce/blip-image-captioning-base",
+            dropout: float = 0.1,
+            max_emotions: int = 3,
+            emotion_dim: int = 32,
+            freeze_blip: bool = True,
+            proxy: Optional[str] = None
     ):
         """
         初始化情感增强的BLIP描述生成模型
@@ -279,7 +283,7 @@ class EmotionEnhancedBlipForCaption(nn.Module):
 
         # 保存参数
         self.freeze_blip = freeze_blip
-        self.num_emotions = len(EMOTION_CATEGORIES) # 添加 num_emotions 属性
+        self.num_emotions = len(EMOTION_CATEGORIES)  # 添加 num_emotions 属性
 
         # 加载BLIP处理器和模型，添加错误处理
         try:
@@ -321,7 +325,7 @@ class EmotionEnhancedBlipForCaption(nn.Module):
         logger.info(f"BLIP文本隐藏维度: {hidden_dim}")
 
         self.emotion_encoder = EmotionEncoder(
-            num_emotions=len(EMOTION_CATEGORIES), # 使用 self.num_emotions
+            num_emotions=len(EMOTION_CATEGORIES),  # 使用 self.num_emotions
             emotion_dim=emotion_dim,
             max_emotions=max_emotions,
             hidden_dim=hidden_dim,
@@ -354,9 +358,9 @@ class EmotionEnhancedBlipForCaption(nn.Module):
         # --- 结束新增 ---
 
     def get_emotion_representation(
-        self,
-        emotion_indices: torch.LongTensor,
-        confidence_values: torch.FloatTensor
+            self,
+            emotion_indices: torch.LongTensor,
+            confidence_values: torch.FloatTensor
     ) -> torch.FloatTensor:
         """获取情感表示"""
         if emotion_indices.dim() == 1:
@@ -373,9 +377,9 @@ class EmotionEnhancedBlipForCaption(nn.Module):
         return emotion_features
 
     def extract_emotions(
-        self,
-        pixel_values: torch.FloatTensor,
-        top_k: int = 3
+            self,
+            pixel_values: torch.FloatTensor,
+            top_k: int = 3
     ) -> Tuple[torch.LongTensor, torch.FloatTensor]:
         """
         从图像像素值中动态提取情感类别和置信度。
@@ -394,16 +398,16 @@ class EmotionEnhancedBlipForCaption(nn.Module):
 
         # 1. 使用 BLIP 视觉编码器提取图像特征
         # 注意：即使冻结了BLIP，我们仍然可以进行前向传播
-        with torch.no_grad(): # 通常在推理时不计算梯度
+        with torch.no_grad():  # 通常在推理时不计算梯度
             vision_outputs = self.blip.vision_model(pixel_values=pixel_values)
             # 获取池化后的输出 (通常是 CLS token 的特征)
-            image_embeds = vision_outputs.pooler_output # 形状: [batch_size, vision_hidden_dim]
+            image_embeds = vision_outputs.pooler_output  # 形状: [batch_size, vision_hidden_dim]
 
         # 2. 使用情感分类头预测情感 logits
-        emotion_logits = self.emotion_classifier(image_embeds) # 形状: [batch_size, num_emotions]
+        emotion_logits = self.emotion_classifier(image_embeds)  # 形状: [batch_size, num_emotions]
 
         # 3. 应用 Sigmoid 获得每个情感的独立概率 (置信度)
-        emotion_probs = torch.sigmoid(emotion_logits) # 形状: [batch_size, num_emotions]
+        emotion_probs = torch.sigmoid(emotion_logits)  # 形状: [batch_size, num_emotions]
 
         # 4. 获取 top-k 情感及其置信度
         # 对每个样本按置信度降序排序
@@ -416,17 +420,17 @@ class EmotionEnhancedBlipForCaption(nn.Module):
         return predicted_emotion_indices, predicted_confidence_values
 
     def forward(
-        self,
-        pixel_values: torch.FloatTensor,
-        emotion_indices: Optional[torch.LongTensor] = None, # 真实情感标签 (LongTensor, 可能用于 EmotionEncoder)
-        emotion_labels_multi_hot: Optional[torch.FloatTensor] = None, # 真实情感标签 (Multi-hot FloatTensor, 用于 BCE Loss)
-        confidence_values: Optional[torch.FloatTensor] = None, # 置信度（目前未使用）
-        input_ids: Optional[torch.LongTensor] = None, # 标题生成输入
-        attention_mask: Optional[torch.LongTensor] = None, # 标题生成掩码
-        labels: Optional[torch.LongTensor] = None, # 标题生成标签 (用于计算损失)
-        return_dict: Optional[bool] = None,
-        emotion_loss_weight: float = 0.5, # 情感损失权重
-        **kwargs
+            self,
+            pixel_values: torch.FloatTensor,
+            emotion_indices: Optional[torch.LongTensor] = None,  # 真实情感标签 (LongTensor, 可能用于 EmotionEncoder)
+            emotion_labels_multi_hot: Optional[torch.FloatTensor] = None,  # 真实情感标签 (Multi-hot FloatTensor, 用于 BCE Loss)
+            confidence_values: Optional[torch.FloatTensor] = None,  # 置信度（目前未使用）
+            input_ids: Optional[torch.LongTensor] = None,  # 标题生成输入
+            attention_mask: Optional[torch.LongTensor] = None,  # 标题生成掩码
+            labels: Optional[torch.LongTensor] = None,  # 标题生成标签 (用于计算损失)
+            return_dict: Optional[bool] = None,
+            emotion_loss_weight: float = 0.5,  # 情感损失权重
+            **kwargs
     ) -> Union[Dict[str, Any], Tuple[torch.Tensor, ...]]:
         """
         前向传播
@@ -443,10 +447,10 @@ class EmotionEnhancedBlipForCaption(nn.Module):
                 vision_outputs = self.blip.vision_model(pixel_values=pixel_values, return_dict=True)
 
             # 池化后的输出需要梯度，以便传递给可训练的 emotion_classifier
-            image_embeds = vision_outputs.pooler_output # [batch_size, vision_hidden_dim]
+            image_embeds = vision_outputs.pooler_output  # [batch_size, vision_hidden_dim]
 
             # 情感分类
-            emotion_logits = self.emotion_classifier(image_embeds) # [batch_size, num_emotions]
+            emotion_logits = self.emotion_classifier(image_embeds)  # [batch_size, num_emotions]
 
             # --- 2. 计算情感损失 (如果有真实标签) ---
             emotion_loss = None
@@ -465,14 +469,14 @@ class EmotionEnhancedBlipForCaption(nn.Module):
                     # 如果情感损失计算出错，设为0以避免训练中断
                     emotion_loss = torch.tensor(0.0, device=pixel_values.device)
             else:
-                pass # No emotion_labels_multi_hot provided, skipping emotion loss calculation
+                pass  # No emotion_labels_multi_hot provided, skipping emotion loss calculation
 
             # --- 3. 获取情感表示 ---
             emotion_features = None
             try:
                 if emotion_indices is not None and confidence_values is not None:
                     # 使用真实情感标签获取情感表示
-                    emotion_features = self.get_emotion_representation( # 使用 get_emotion_representation
+                    emotion_features = self.get_emotion_representation(  # 使用 get_emotion_representation
                         emotion_indices=emotion_indices,
                         confidence_values=confidence_values
                     )
@@ -481,7 +485,7 @@ class EmotionEnhancedBlipForCaption(nn.Module):
                     predicted_emotion_indices, predicted_confidence_values = self.extract_emotions(
                         pixel_values=pixel_values
                     )
-                    emotion_features = self.get_emotion_representation( # 使用 get_emotion_representation
+                    emotion_features = self.get_emotion_representation(  # 使用 get_emotion_representation
                         emotion_indices=predicted_emotion_indices,
                         confidence_values=predicted_confidence_values
                     )
@@ -501,7 +505,7 @@ class EmotionEnhancedBlipForCaption(nn.Module):
                     # 直接使用BLIP模型计算损失，避免连接情感特征导致的形状不匹配问题
                     with torch.set_grad_enabled(not self.freeze_blip):
                         blip_outputs = self.blip(
-                            pixel_values=pixel_values, # 传递像素值，BLIP内部处理视觉部分
+                            pixel_values=pixel_values,  # 传递像素值，BLIP内部处理视觉部分
                             input_ids=input_ids,
                             attention_mask=attention_mask,
                             labels=labels,
@@ -568,15 +572,15 @@ class EmotionEnhancedBlipForCaption(nn.Module):
             }
 
     def generate(
-        self,
-        pixel_values: torch.FloatTensor,
-        emotion_indices: torch.LongTensor = None,
-        confidence_values: torch.FloatTensor = None,
-        input_ids: torch.LongTensor = None,
-        attention_mask: torch.LongTensor = None,
-        emotion_alpha: float = 0.1,
-        extract_top_k: int = 3, # 新增：控制动态提取的情感数量
-        **generate_kwargs
+            self,
+            pixel_values: torch.FloatTensor,
+            emotion_indices: torch.LongTensor = None,
+            confidence_values: torch.FloatTensor = None,
+            input_ids: torch.LongTensor = None,
+            attention_mask: torch.LongTensor = None,
+            emotion_alpha: float = 0.1,
+            extract_top_k: int = 3,  # 新增：控制动态提取的情感数量
+            **generate_kwargs
     ) -> torch.LongTensor:
         """
         生成带有情感色彩的描述文本。
@@ -640,7 +644,7 @@ class EmotionEnhancedBlipForCaption(nn.Module):
                 )
             except Exception as e:
                 logger.error(f"计算情感表示时出错: {e}，将不注入情感。")
-                emotion_features = None # 确保出错时 emotion_features 为 None
+                emotion_features = None  # 确保出错时 emotion_features 为 None
 
         # 3. 如果获得情感特征，则创建并添加 Logits Processor
         if emotion_features is not None:
@@ -648,21 +652,20 @@ class EmotionEnhancedBlipForCaption(nn.Module):
                 emotion_processor = EmotionLogitsProcessor(
                     model_instance=self,
                     emotion_features=emotion_features,
-                    alpha=emotion_alpha # 使用传入的 alpha 值
+                    alpha=emotion_alpha  # 使用传入的 alpha 值
                 )
                 logits_processor.append(emotion_processor)
                 logger.info(f"已添加 EmotionLogitsProcessor，alpha={emotion_alpha}")
             except ValueError as e:
-                 logger.error(f"创建 EmotionLogitsProcessor 失败: {e}，将不注入情感。")
+                logger.error(f"创建 EmotionLogitsProcessor 失败: {e}，将不注入情感。")
             except Exception as e:
                 logger.error(f"创建或添加 EmotionLogitsProcessor 时发生未知错误: {e}，将不注入情感。")
-
 
         # 4. 设置默认生成参数 (如果未提供)
         generate_kwargs.setdefault("max_length", 100)
         generate_kwargs.setdefault("num_beams", 5)
         generate_kwargs.setdefault("min_length", 10)
-        generate_kwargs.setdefault("do_sample", True) # 默认采样
+        generate_kwargs.setdefault("do_sample", True)  # 默认采样
         generate_kwargs.setdefault("temperature", 0.7)
         generate_kwargs.setdefault("top_p", 0.9)
 
@@ -671,21 +674,21 @@ class EmotionEnhancedBlipForCaption(nn.Module):
             pixel_values=pixel_values,
             input_ids=input_ids,
             attention_mask=attention_mask,
-            logits_processor=logits_processor, # 传递包含情感处理器的列表
+            logits_processor=logits_processor,  # 传递包含情感处理器的列表
             **generate_kwargs
         )
 
         return outputs
 
     def generate_caption(
-        self,
-        image=None,
-        pixel_values=None,
-        emotion_indices=None,
-        confidence_values=None,
-        max_length=50,
-        num_beams=5,
-        **generate_kwargs
+            self,
+            image=None,
+            pixel_values=None,
+            emotion_indices=None,
+            confidence_values=None,
+            max_length=50,
+            num_beams=5,
+            **generate_kwargs
     ):
         """生成图像描述"""
         # 处理输入

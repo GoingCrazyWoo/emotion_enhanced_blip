@@ -1,122 +1,121 @@
-
 import json
 import argparse
 import logging
 import os
 from typing import Dict, List, Any
 
-# --- Basic Logging Setup ---
+# --- 基本日志设置 ---
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
+
 def add_titles(
-    annotations_path: str,
-    titles_path: str,
-    mapping_path: str, # Assuming this file maps image_id to instance_id
-    output_path: str
+        annotations_path: str,
+        titles_path: str,
+        mapping_path: str,  # 假设这个文件将 image_id 映射到 instance_id
+        output_path: str
 ) -> None:
     """
-    Adds titles from the titles file to the annotations file using a mapping file.
+    使用映射文件将标题从标题文件添加到注释文件。
 
-    Args:
-        annotations_path: Path to the preprocessed annotations JSON file.
-        titles_path: Path to the JSON file containing titles and image_ids.
-        mapping_path: Path to the JSON file mapping image_id to instance_id.
-        output_path: Path to save the updated annotations JSON file.
+    参数：
+        annotations_path: 预处理注释 JSON 文件的路径。
+        titles_path: 包含标题和 image_id 的 JSON 文件路径。
+        mapping_path: 映射 image_id 到 instance_id 的 JSON 文件路径。
+        output_path: 保存更新后注释 JSON 文件的路径。
     """
-    logger.info(f"Loading annotations from: {annotations_path}")
+    logger.info(f"正在加载注释文件: {annotations_path}")
     try:
         with open(annotations_path, 'r', encoding='utf-8') as f:
             annotations_data: Dict[str, Dict[str, Any]] = json.load(f)
     except FileNotFoundError:
-        logger.error(f"Annotations file not found: {annotations_path}")
+        logger.error(f"找不到注释文件: {annotations_path}")
         return
     except json.JSONDecodeError:
-        logger.error(f"Error decoding JSON from annotations file: {annotations_path}")
+        logger.error(f"解码注释文件 JSON 时出错: {annotations_path}")
         return
 
-    logger.info(f"Loading titles from: {titles_path}")
+    logger.info(f"正在加载标题文件: {titles_path}")
     try:
         with open(titles_path, 'r', encoding='utf-8') as f:
             titles_data: List[Dict[str, Any]] = json.load(f)
     except FileNotFoundError:
-        logger.error(f"Titles file not found: {titles_path}")
+        logger.error(f"找不到标题文件: {titles_path}")
         return
     except json.JSONDecodeError:
-        logger.error(f"Error decoding JSON from titles file: {titles_path}")
+        logger.error(f"解码标题文件 JSON 时出错: {titles_path}")
         return
 
-    logger.info(f"Loading mapping data from: {mapping_path}")
+    logger.info(f"正在加载映射文件: {mapping_path}")
     try:
-        # *** Assumption: mapping_path JSON is a list of dicts like [{'image_id': 0, 'instance_id': 'hex_string'}, ...]***
+        # *** 假设 mapping_path JSON 文件是一个字典列表，形式如 [{'image_id': 0, 'instance_id': 'hex_string'}, ...] ***
         with open(mapping_path, 'r', encoding='utf-8') as f:
             mapping_data: List[Dict[str, Any]] = json.load(f)
     except FileNotFoundError:
-        logger.error(f"Mapping file not found: {mapping_path}. Cannot map titles to annotations.")
+        logger.error(f"找不到映射文件: {mapping_path}，无法将标题映射到注释。")
         return
     except json.JSONDecodeError:
-        logger.error(f"Error decoding JSON from mapping file: {mapping_path}")
+        logger.error(f"解码映射文件 JSON 时出错: {mapping_path}")
         return
     except Exception as e:
-        logger.error(f"Unexpected error loading mapping file {mapping_path}: {e}")
+        logger.error(f"加载映射文件时发生意外错误 {mapping_path}: {e}")
         return
 
-    # --- Prepare Lookups ---
+    # --- 准备查找表 ---
     try:
-        # Create a lookup dictionary for titles: {image_id: title}
+        # 创建标题查找字典：{image_id: title}
         image_id_to_title: Dict[int, str] = {
             item['image_id']: item['generated_title']
             for item in titles_data
             if 'image_id' in item and 'generated_title' in item
         }
-        logger.info(f"Created title lookup with {len(image_id_to_title)} entries.")
+        logger.info(f"创建了包含 {len(image_id_to_title)} 条目的标题查找表。")
 
-        # Create a mapping from original_id (instance_id) to image_id using the mapping_path file
-        # Assuming mapping_data is a list of dicts like [{'image_id': 0, 'original_id': 'hex_string'}, ...]
+        # 使用映射文件创建从原始 ID 到 image_id 的映射
+        # 假设映射数据是一个字典列表，形式如 [{'image_id': 0, 'original_id': 'hex_string'}, ...]
         instance_id_to_image_id: Dict[str, int] = {}
         duplicates = 0
         processed_mapping_items = 0
         missing_keys_count = 0
         for item in mapping_data:
-            # Use 'original_id' for instance ID and 'image_id' for image ID
+            # 使用 'original_id' 作为实例 ID，'image_id' 作为图像 ID
             if 'original_id' in item and 'image_id' in item:
                 processed_mapping_items += 1
-                instance_id = item['original_id'] # <-- 使用 'original_id'
+                instance_id = item['original_id']  # <-- 使用 'original_id'
                 image_id = item['image_id']
                 if instance_id in instance_id_to_image_id:
-                    # Log if an original_id appears multiple times
-                    # logger.warning(f"Duplicate original_id '{instance_id}' found in mapping file. Keeping first encountered image_id ({instance_id_to_image_id[instance_id]}).")
+                    # 如果 original_id 多次出现，记录日志
+                    # logger.warning(f"在映射文件中发现重复的 original_id '{instance_id}'，保留首次出现的 image_id ({instance_id_to_image_id[instance_id]}).")
                     duplicates += 1
                 else:
                     try:
                         instance_id_to_image_id[instance_id] = int(image_id)
                     except (ValueError, TypeError):
-                         logger.warning(f"Could not convert image_id '{image_id}' to int for original_id '{instance_id}'. Skipping this mapping entry.")
-                         continue # Skip this entry if image_id is not a valid integer representation
+                        logger.warning(f"无法将 image_id '{image_id}' 转换为 int 类型，原始 ID '{instance_id}' 被跳过。")
+                        continue  # 如果 image_id 不是有效的整数表示，则跳过此条目
             else:
-                # logger.warning(f"Skipping item in mapping file due to missing 'original_id' or 'image_id': {item}")
+                # logger.warning(f"映射文件中缺少 'original_id' 或 'image_id'，已跳过：{item}")
                 missing_keys_count += 1
 
-        logger.info(f"Processed {processed_mapping_items} items from mapping file.")
+        logger.info(f"处理了 {processed_mapping_items} 条映射文件中的条目。")
         if missing_keys_count > 0:
-            logger.warning(f"Skipped {missing_keys_count} items in mapping file due to missing 'original_id' or 'image_id'.")
+            logger.warning(f"由于缺少 'original_id' 或 'image_id'，跳过了 {missing_keys_count} 条映射文件条目。")
         if duplicates > 0:
-             logger.warning(f"Found {duplicates} duplicate original_ids in the mapping file.")
-        logger.info(f"Created original_id to image_id mapping with {len(instance_id_to_image_id)} unique entries.") # 日志消息更新
+            logger.warning(f"在映射文件中发现了 {duplicates} 个重复的 original_id。")
+        logger.info(f"创建了 {len(instance_id_to_image_id)} 个唯一的 original_id 到 image_id 的映射。")  # 日志消息更新
         if not instance_id_to_image_id:
-             logger.warning("The original_id to image_id mapping is empty. Check the mapping file format and content.")
+            logger.warning("original_id 到 image_id 的映射为空，请检查映射文件的格式和内容。")
 
 
     except KeyError as e:
-        # Keep this generic error handling
-        logger.error(f"Missing expected key '{e}' in titles or mapping data. Please check file formats.")
+        # 保持通用的错误处理
+        logger.error(f"标题或映射数据中缺少预期的键 '{e}'，请检查文件格式。")
         return
     except Exception as e:
-        logger.error(f"Error creating lookups: {e}")
+        logger.error(f"创建查找表时发生错误: {e}")
         return
 
-
-    # --- Add Titles to Annotations ---
+    # --- 将标题添加到注释 ---
     updated_count = 0
     missing_mapping_count = 0
     missing_title_count = 0
@@ -127,61 +126,62 @@ def add_titles(
                 annotation['title'] = image_id_to_title[image_id]
                 updated_count += 1
             else:
-                logger.warning(f"No title found for image_id {image_id} (instance_id: {instance_id})")
+                logger.warning(f"没有找到 image_id {image_id} (instance_id: {instance_id}) 对应的标题")
                 missing_title_count += 1
         else:
-            logger.warning(f"No image_id mapping found for instance_id/original_id: {instance_id}") # 日志消息更新
+            logger.warning(f"没有找到 instance_id/original_id ({instance_id}) 对应的 image_id 映射")  # 日志消息更新
             missing_mapping_count += 1
 
-    logger.info(f"Added titles to {updated_count} annotations.")
+    logger.info(f"已为 {updated_count} 条注释添加标题。")
     if missing_mapping_count > 0:
-        logger.warning(f"Could not find mapping for {missing_mapping_count} instance_ids/original_ids.") # 日志消息更新
+        logger.warning(f"无法为 {missing_mapping_count} 个 instance_id/original_id 找到映射。")  # 日志消息更新
     if missing_title_count > 0:
-        logger.warning(f"Could not find titles for {missing_title_count} mapped image_ids.")
+        logger.warning(f"无法为 {missing_title_count} 个已映射的 image_id 找到标题。")
 
-    # --- Save Updated Annotations ---
-    logger.info(f"Saving updated annotations to: {output_path}")
+    # --- 保存更新后的注释 ---
+    logger.info(f"正在保存更新后的注释到: {output_path}")
     try:
-        # Ensure the output directory exists
+        # 确保输出目录存在
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
         with open(output_path, 'w', encoding='utf-8') as f:
             json.dump(annotations_data, f, indent=2, ensure_ascii=False)
-        logger.info("Annotations successfully updated and saved.")
+        logger.info("注释已成功更新并保存。")
     except IOError as e:
-        logger.error(f"Failed to write updated annotations to {output_path}: {e}")
+        logger.error(f"保存更新后的注释到 {output_path} 时失败: {e}")
     except Exception as e:
-        logger.error(f"An unexpected error occurred while saving the file: {e}")
+        logger.error(f"保存文件时发生了意外错误: {e}")
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Add titles to preprocessed annotations.")
+    parser = argparse.ArgumentParser(description="将标题添加到预处理注释中。")
     parser.add_argument(
         "--annotations_path",
         type=str,
         default="../annotations/preprocessed_annotations.json",
-        help="Path to the input preprocessed annotations JSON file."
+        help="输入预处理注释 JSON 文件的路径。"
     )
     parser.add_argument(
         "--titles_path",
         type=str,
         default="../annotations/titles_0_to_2339_title.json",
-        help="Path to the JSON file containing titles and image_ids."
+        help="包含标题和 image_id 的 JSON 文件路径。"
     )
     parser.add_argument(
         "--mapping_path",
         type=str,
-        default="../annotations/results_0_to_2339.json", # Assuming this file provides the mapping
-        help="Path to the JSON file mapping image_id to instance_id."
+        default="../annotations/results_0_to_2339.json",  # 假设这个文件提供了映射
+        help="映射 image_id 到 instance_id 的 JSON 文件路径。"
     )
     parser.add_argument(
         "--output_path",
         type=str,
-        default="../annotations/preprocessed_annotations_with_titles.json", # Default to a new file
-        help="Path to save the updated annotations JSON file."
+        default="../annotations/preprocessed_annotations_with_titles.json",  # 默认保存为一个新文件
+        help="保存更新后注释 JSON 文件的路径。"
     )
     args = parser.parse_args()
 
     add_titles(args.annotations_path, args.titles_path, args.mapping_path, args.output_path)
+
 
 if __name__ == "__main__":
     main()

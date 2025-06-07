@@ -405,8 +405,7 @@ class RotaryEmbedding(torch.nn.Module):
         # 应用旋转位置编码
         q_rot = apply_rotary_emb(
             q, cos, sin, interleaved=self.interleaved
-        )
-        
+        )        
         k_rot = apply_rotary_emb(
             k, cos, sin, interleaved=self.interleaved
         )
